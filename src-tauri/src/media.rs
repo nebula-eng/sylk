@@ -354,7 +354,13 @@ mod tests {
 
     #[test]
     fn renders_template() {
-        let name = render_filename("{date}_{time}_{sender}", "示例发送者A", 1_700_000_000, 3200, "7");
+        let name = render_filename(
+            "{date}_{time}_{sender}",
+            "示例发送者A",
+            1_700_000_000,
+            3200,
+            "7",
+        );
         assert!(name.starts_with("2023"));
         assert!(name.contains("示例发送者A"));
     }
