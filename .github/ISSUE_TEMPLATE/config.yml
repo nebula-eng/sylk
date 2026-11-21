@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 第一次使用 / 引擎接入
+    url: https://github.com/nebula-eng/sylk/blob/main/docs/quickstart.md
+    about: 安装、引擎接入、常见启动问题先看快速开始。
+  - name: 安全问题
+    url: https://github.com/nebula-eng/sylk/blob/main/SECURITY.md
+    about: 凭据泄露、本地文件越权、注入等问题请私下报告，不要开公开 issue。
+  - name: 贡献代码
+    url: https://github.com/nebula-eng/sylk/blob/main/CONTRIBUTING.md
+    about: 构建方式、提交范围与测试要求。

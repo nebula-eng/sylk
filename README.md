@@ -6,7 +6,8 @@
 
 QQ 语音归档工具。把群聊和私聊里的语音存到本地，转成文字，能搜、能整理、能导出。
 
-[![CI](https://github.com/nebula-eng/sylk/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![CI](https://github.com/nebula-eng/sylk/actions/workflows/ci.yml/badge.svg)](https://github.com/nebula-eng/sylk/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/nebula-eng/sylk?color=3e63dd)](https://github.com/nebula-eng/sylk/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3e63dd.svg)](LICENSE)
 [![Tauri](https://img.shields.io/badge/Tauri-2-24c8db.svg)](https://tauri.app)
 [![Rust](https://img.shields.io/badge/Rust-1.80%2B-b7410e.svg)](src-tauri)
@@ -28,6 +29,43 @@ QQ 语音归档工具。把群聊和私聊里的语音存到本地，转成文�
 QQ 的语音只能在线听。换台设备、清一次缓存、过一阵子，那条语音就没了。群里有人用语音交代了一件事，等你想找，只剩一行「[语音]」。
 
 Sylk 把你能听到的语音存成文件。登录用你自己的账号，能读到的范围和手机 QQ 上看到的一样。
+
+## 状态与运行要求
+
+| | |
+|---|---|
+| 当前版本 | 0.2.4，Windows x64 |
+| 系统 | Windows 10 2004+ / Windows 11；需要 WebView2 运行时 |
+| 权限 | 当前用户安装，不需要管理员权限 |
+| 引擎 | 不内置，首次使用按 [`docs/quickstart.md`](docs/quickstart.md) 接入 |
+| 数据 | 默认全部保存在本机；无遥测；详细清单见 [`docs/privacy.md`](docs/privacy.md) |
+
+## 文档
+
+| 文档 | 内容 |
+|---|---|
+| [`docs/quickstart.md`](docs/quickstart.md) | 两条最短使用路径、引擎包结构、常见启动问题 |
+| [`docs/engine.md`](docs/engine.md) | 四种引擎接入方式、目录结构、V8 兼容模式 |
+| [`docs/architecture.md`](docs/architecture.md) | 前后端结构、事件、错误处理与隐私层 |
+| [`docs/privacy.md`](docs/privacy.md) | 数据清单、出网请求、密钥与日志、删除范围与边界 |
+| [`SECURITY.md`](SECURITY.md) | 威胁模型与安全问题报告方式 |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | 构建、提交范围、测试要求 |
+| [`CHANGELOG.md`](CHANGELOG.md) | 版本记录 |
+
+## 仓库结构
+
+```
+sylk/
+├─ src/                 前端（React 19 + TypeScript + zustand）
+│  ├─ components/       界面组件
+│  └─ lib/              API 封装、store、类型
+├─ src-tauri/           Rust 后端（Tauri 2）
+│  ├─ src/              命令、数据库、引擎托管、隐私层
+│  └─ engine/           第三方引擎说明（不放二进制）
+├─ scripts/             构建、安装、截图与端到端检查
+├─ docs/                文档与界面截图
+└─ .github/             CI、Release、Issue/PR 模板
+```
 
 ## 从源码构建
 

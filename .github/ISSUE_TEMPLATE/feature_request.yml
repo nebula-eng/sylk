@@ -1,0 +1,44 @@
+name: 功能建议
+description: 希望 Sylk 增加或改进的能力
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sylk 不实现 QQ 协议，账号与消息能力来自第三方引擎（NapCat / 兼容引擎包）。
+        与「换一个协议实现」「绕过腾讯风控」有关的请求不在项目范围内。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题
+      description: 描述场景和现在的做法，不用先给方案
+      placeholder: 同步历史时……；统计页……；导出时……
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你希望的方案
+      description: 有具体交互或格式也可以写
+  - type: dropdown
+    id: area
+    attributes:
+      label: 涉及范围
+      options:
+        - 界面与交互
+        - 归档 / 同步 / 导出
+        - 转写
+        - 引擎与登录
+        - 隐私与数据
+        - 构建与文档
+        - 其他
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 已搜索过现有 issue 和文档，没有重复
+          required: true

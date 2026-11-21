@@ -2,7 +2,7 @@ name: Release
 
 # 打 tag 就出正式版：编译 Windows 安装包，挂到 GitHub Releases。
 # 发布包**不包含**第三方引擎（NapCat / V8 兼容引擎包受许可限制），
-# 用户首次启动按 README「用法」里的三种方式自行接入。
+# 用户首次启动按 docs/quickstart.md 自行接入。
 
 on:
   push:
@@ -68,18 +68,49 @@ jobs:
           }
           "安装包 {0}：{1:N1} MB，未包含引擎（符合预期）" -f $exe.Name, $sizeMb
 
+      - name: 生成发布说明
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          $header = @"
+          从源码安装（Windows）：
+
+          1. 安装 Node 20+、Rust、VS Build Tools（勾「使用 C++ 的桌面开发」）
+          2. 拉取仓库，双击 ``build.cmd``
+          3. 之后从桌面图标打开
+
+          或直接下载下面的 ``Sylk_*_x64-setup.exe``，双击安装。
+
+          > 安装包与仓库都不包含第三方引擎；首次使用请按 docs/quickstart.md 接入。
+          "@
+
+          $body = $header
+          if (Test-Path CHANGELOG.md) {
+            $lines = Get-Content CHANGELOG.md
+            $start = -1
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+              if ($lines[$i] -match "^## \[$([regex]::Escape($version))\]") {
+                $start = $i
+                break
+              }
+            }
+            if ($start -ge 0) {
+              $end = $lines.Count
+              for ($i = $start + 1; $i -lt $lines.Count; $i++) {
+                if ($lines[$i] -match '^## \[') {
+                  $end = $i
+                  break
+                }
+              }
+              $body = $header + "`n`n" + ($lines[$start..($end - 1)] -join "`n")
+            }
+          }
+          Set-Content -Path release-notes.md -Value $body -Encoding utf8
+
       - name: 挂到 Releases
         uses: softprops/action-gh-release@v2
         with:
           files: src-tauri/target/release/bundle/nsis/*.exe
           draft: ${{ github.event_name == 'workflow_dispatch' && inputs.draft || false }}
-          generate_release_notes: true
-          body: |
-            从源码装（Windows）：
-
-            1. 装 [Node 20+](https://nodejs.org/)、[Rust](https://rustup.rs/)、
-               [VS Build Tools](https://visualstudio.microsoft.com/downloads/)（勾「使用 C++ 的桌面开发」）
-            2. 拉仓库，双击 `build.cmd`
-            3. 之后从桌面图标打开
-
-            或者直接下载下面的 `Sylk_*_x64-setup.exe`，双击安装。
+          body_path: release-notes.md
+          generate_release_notes: false
