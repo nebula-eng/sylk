@@ -2,6 +2,14 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
+## [0.2.5] - 2026-11-21
+
+### 修复
+
+- **群聊与好友头像不显示**：隐私加固后的 CSP 只允许 `img-src 'self' data: blob:`，把 QQ 头像
+  CDN（`q1.qlogo.cn` / `p.qlogo.cn`）拦掉了。现在图片允许 HTTPS 外链（`img-src ... https:`），
+  脚本、`connect-src`、对象嵌入等限制不变；CSP 说明已同步到 `SECURITY.md` 与 `docs/privacy.md`。
+
 ## [0.2.4] - 2026-11-21
 
 真机修通 QQ 链接。这一版之前，点「下载并启动」在真机上从来没有成功出过二维码。

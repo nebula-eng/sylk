@@ -55,7 +55,8 @@ Sylk 处理的是聊天记录和语音，默认假设：
 ## WebView 与前端
 
 - 内容安全策略（CSP）在 `tauri.conf.json` 中显式配置：脚本仅限自身，禁止内联脚本、对象嵌入
-  和框架；媒体只允许 `blob:` 与自身；`connect-src` 只放行 Tauri IPC 与本机回环。
+  和框架；图片允许自身、`data:`、`blob:` 与 HTTPS 外链（QQ 头像 CDN 需要），媒体只允许
+  `blob:` 与自身；`connect-src` 只放行 Tauri IPC 与本机回环。
 - **不启用 Tauri 的 asset 文件协议。** 播放音频改为后端命令按语音 ID 读取媒体库内的 WAV，
   再以 `blob:` 播放；WebView 拿不到任意本机路径的读取能力。
 - 发布构建关闭 DevTools；调试构建保留，便于排查界面问题。
