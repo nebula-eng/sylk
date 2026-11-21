@@ -37,7 +37,7 @@ export function ConversationList() {
     <aside className="conv-pane" aria-label="会话列表">
       <div className="conv-pane__head">
         <div className="conv-pane__me">
-          <Avatar name={account?.nickname ?? "未登录"} size="sm" />
+          <Avatar name={account?.nickname ?? "未登录"} src={account?.avatar} size="sm" />
           <div style={{ minWidth: 0 }}>
             <div className="conv-pane__name">{account?.nickname ?? "未连接账号"}</div>
             <div className="conv-pane__sub">
