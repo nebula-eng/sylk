@@ -132,8 +132,12 @@ impl NapcatClient {
         if !cursor.is_empty() {
             body["message_seq"] = Value::String(cursor.to_string());
         }
-        let data = self.call("get_group_msg_history", body).await?;
-        Ok(extract_messages(data))
+        match self.call("get_group_msg_history", body).await {
+            Ok(data) => Ok(extract_messages(data)),
+            // 空会话时 NapCat 会返回 retcode 200 +「消息undefined不存在」而不是空列表。
+            Err(err) if is_empty_history_error(&err) => Ok(Vec::new()),
+            Err(err) => Err(err),
+        }
     }
 
     pub async fn friend_history(
@@ -146,8 +150,11 @@ impl NapcatClient {
         if !cursor.is_empty() {
             body["message_seq"] = Value::String(cursor.to_string());
         }
-        let data = self.call("get_friend_msg_history", body).await?;
-        Ok(extract_messages(data))
+        match self.call("get_friend_msg_history", body).await {
+            Ok(data) => Ok(extract_messages(data)),
+            Err(err) if is_empty_history_error(&err) => Ok(Vec::new()),
+            Err(err) => Err(err),
+        }
     }
 
     /// 让 NapCat 把语音转成通用格式，返回它本机上的绝对路径。
@@ -212,6 +219,14 @@ fn extract_messages(data: Value) -> Vec<Value> {
         },
         _ => Vec::new(),
     }
+}
+
+/// NapCat 对没有历史消息的会话返回 retcode 200 +「消息undefined不存在」，
+/// 这不是真正的失败，按空列表处理，否则整个同步会被一个空会话卡死。
+fn is_empty_history_error(err: &AppError) -> bool {
+    let text = err.to_string();
+    text.contains("不存在")
+        && (text.contains("消息") || text.to_ascii_lowercase().contains("message"))
 }
 
 pub fn group_avatar(group_id: &str) -> String {
@@ -431,26 +446,29 @@ pub fn parse_event(event: &Value) -> Option<LiveEvent> {
 // WebSocket
 // ---------------------------------------------------------------------------
 
-pub fn ws_url_with_token(ws_url: &str, token: &str) -> String {
-    let trimmed = ws_url.trim();
-    if token.trim().is_empty() {
-        return trimmed.to_string();
-    }
-    let separator = if trimmed.contains('?') { '&' } else { '?' };
-    format!(
-        "{trimmed}{separator}access_token={}",
-        urlencoding::encode(token.trim())
-    )
-}
-
 /// 建立一次连接并把事件推给回调。返回时表示连接已断开。
-pub async fn pump_once<F>(url: &str, mut on_event: F) -> AppResult<()>
+///
+/// 认证用 `Authorization: Bearer` 头，不再把 token 拼进 URL：
+/// 新版 NapCat 的 WebSocket 服务对 query token 会返回 400，而 HTTP 接口仍然能通，
+/// 表现为「界面已登录但实时监听一直重连」。
+pub async fn pump_once<F>(url: &str, token: &str, mut on_event: F) -> AppResult<()>
 where
     F: FnMut(LiveEvent),
 {
-    let (mut socket, _) = tokio_tungstenite::connect_async(url)
+    use tokio_tungstenite::tungstenite::client::IntoClientRequest;
+    use tokio_tungstenite::tungstenite::http::HeaderValue;
+
+    let mut request = url
+        .into_client_request()
+        .map_err(|err| AppError::msg(format!("WebSocket 请求无效：{err}")))?;
+    if !token.trim().is_empty() {
+        let value = HeaderValue::from_str(&format!("Bearer {}", token.trim()))
+            .map_err(|err| AppError::msg(format!("WebSocket 令牌无效：{err}")))?;
+        request.headers_mut().insert("Authorization", value);
+    }
+    let (mut socket, _) = tokio_tungstenite::connect_async(request)
         .await
-        .map_err(|err| AppError::msg(format!("WebSocket 连接失败：{err}")))?;
+        .map_err(|err| AppError::msg(format!("WebSocket 连接失败（{url}）：{err}")))?;
 
     on_event(LiveEvent::Connected);
 
@@ -542,14 +560,10 @@ mod tests {
     }
 
     #[test]
-    fn appends_token_to_ws_url() {
-        assert_eq!(
-            ws_url_with_token("ws://127.0.0.1:3001", "a b"),
-            "ws://127.0.0.1:3001?access_token=a%20b"
-        );
-        assert_eq!(
-            ws_url_with_token("ws://127.0.0.1:3001", ""),
-            "ws://127.0.0.1:3001"
-        );
+    fn recognizes_empty_history_error() {
+        assert!(is_empty_history_error(&AppError::msg(
+            "NapCat 拒绝执行 get_friend_msg_history：消息undefined不存在"
+        )));
+        assert!(!is_empty_history_error(&AppError::msg("网络超时")));
     }
 }

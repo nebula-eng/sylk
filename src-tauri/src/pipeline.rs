@@ -775,7 +775,8 @@ pub fn spawn_live_listener(app: AppHandle, state: Arc<Inner>) {
                 continue;
             }
             let (_, ws_url, token) = state.napcat_endpoints();
-            let url = napcat::ws_url_with_token(&ws_url, &token);
+            // token 走 Authorization 头，不拼 URL；query token 在新版 NapCat 会 400。
+            let url = ws_url.clone();
             if url.trim().is_empty() || url == "ws://" || ws_url.trim().is_empty() {
                 tokio::time::sleep(Duration::from_secs(2)).await;
                 continue;
@@ -788,8 +789,9 @@ pub fn spawn_live_listener(app: AppHandle, state: Arc<Inner>) {
 
             let (tx, mut rx) = mpsc::unbounded_channel::<LiveEvent>();
             let pump_url = url.clone();
+            let pump_token = token.clone();
             let pump = tauri::async_runtime::spawn(async move {
-                let result = napcat::pump_once(&pump_url, |event| {
+                let result = napcat::pump_once(&pump_url, &pump_token, |event| {
                     let _ = tx.send(event);
                 })
                 .await;

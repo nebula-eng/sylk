@@ -117,10 +117,15 @@ impl Engine {
         if rt.http_port == 0 {
             return None;
         }
+        // 运行期 token 在极端情况下会与磁盘配置不一致（例如两次启动交错，
+        // 先启动的 QQ 读到了后一次写入的配置）。OneBot 以配置文件为准，
+        // 这里也优先取同端口配置里的 token，避免所有接口 403、界面卡在启动中。
+        let token = config_token_for_port(Path::new(&rt.napcat_dir), rt.http_port)
+            .unwrap_or_else(|| rt.token.clone());
         Some((
             format!("http://127.0.0.1:{}", rt.http_port),
             format!("ws://127.0.0.1:{}", rt.ws_port),
-            rt.token.clone(),
+            token,
         ))
     }
 
@@ -634,6 +639,54 @@ fn config_dir(dir: &Path) -> PathBuf {
     // 都没找到就先建在根下，首次启动 NapCat 会沿用
     let _ = std::fs::create_dir_all(&direct);
     direct
+}
+
+/// 从引擎配置里找同端口 HTTP 服务使用的 token。
+///
+/// 账号配置文件（`onebot11_<uin>.json`）优先于默认 `onebot11.json`，
+/// 因为运行中的 NapCat 实际加载的是前者。只做只读解析，不改文件。
+fn config_token_for_port(dir: &Path, port: u16) -> Option<String> {
+    let config = config_dir(dir);
+    let entries = std::fs::read_dir(config).ok()?;
+    let mut account_specific = None;
+    let mut default = None;
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if !name.starts_with("onebot11") || !name.ends_with(".json") {
+            continue;
+        }
+        let Ok(text) = std::fs::read_to_string(entry.path()) else {
+            continue;
+        };
+        let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) else {
+            continue;
+        };
+        let servers = value
+            .get("network")
+            .and_then(|network| network.get("httpServers"))
+            .and_then(|servers| servers.as_array());
+        let Some(servers) = servers else {
+            continue;
+        };
+        for server in servers {
+            if server.get("port").and_then(|value| value.as_u64()) != Some(port as u64) {
+                continue;
+            }
+            let Some(token) = server
+                .get("token")
+                .and_then(|value| value.as_str())
+                .filter(|token| !token.is_empty())
+            else {
+                continue;
+            };
+            if name == "onebot11.json" {
+                default = Some(token.to_string());
+            } else {
+                account_specific = Some(token.to_string());
+            }
+        }
+    }
+    account_specific.or(default)
 }
 
 /// 在引擎自己的缓存目录里找同名音频。
