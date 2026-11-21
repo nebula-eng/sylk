@@ -1,32 +1,40 @@
 version: 2
 updates:
-  # 前端依赖
+  # 前端依赖：只跟 minor/patch，主版本升级由人工评估
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
     groups:
       frontend:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
 
-  # Rust 依赖
+  # Rust 依赖：同样只跟 minor/patch，避免依赖大版本一次性涌入
   - package-ecosystem: cargo
     directory: /src-tauri
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
     groups:
       backend:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
 
-  # GitHub Actions
+  # GitHub Actions 的版本号按 major 递增，这里正常升级
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
