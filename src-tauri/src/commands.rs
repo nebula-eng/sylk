@@ -586,6 +586,13 @@ pub fn engine_stop(app: AppHandle) -> AppResult<EngineStatus> {
 pub fn engine_restart(app: AppHandle) -> AppResult<EngineStatus> {
     let inner = inner(&app);
     let settings = inner.settings_snapshot();
+    // 用户主动点「刷新二维码 / 重启引擎」时，如果还卡在快速登录阶段，
+    // 清掉快速登录标记，确保这次重启直接进入扫码流程。
+    if inner.engine.rt().phase == "starting" {
+        if let Some(dir) = engine::data_dir(&settings.engine) {
+            let _ = std::fs::remove_file(dir.join(".sylk-account"));
+        }
+    }
     engine::stop(&app, &inner.engine, &settings.engine);
     std::thread::sleep(std::time::Duration::from_millis(700));
     engine::start_fresh(app.clone(), inner.engine.clone(), settings.engine.clone())

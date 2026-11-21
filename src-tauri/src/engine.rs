@@ -254,6 +254,12 @@ pub fn v8_dir(settings: &EngineSettings) -> Option<PathBuf> {
     v8_bundle_at(Path::new(configured))
 }
 
+/// 当前配置对应的引擎数据目录（V8 包或 NapCat 目录）。
+/// 用于清理快速登录标记这类运行期状态，不触发任何进程操作。
+pub fn data_dir(settings: &EngineSettings) -> Option<PathBuf> {
+    v8_dir(settings).or_else(|| resolve_dir(settings))
+}
+
 /// 读 QQ 便携/安装目录里真实的客户端版本（`versions/config.json` 的 curVersion）。
 fn qq_installed_version(qq_root: &Path) -> Option<String> {
     if let Ok(text) = std::fs::read_to_string(qq_root.join("versions").join("config.json")) {
@@ -1152,6 +1158,9 @@ fn start_steps(
         spawn_process(&dir, &entry, &settings)?
     };
     let pid = child.id();
+    // 快速登录只是加速手段：记录存在时先试自动登录，超时后 QR watcher 会
+    // 自动清掉标记并改用扫码，避免卡在「正在启动」却永远不生成二维码。
+    let quick_login = v8 && dir.join(".sylk-account").is_file();
     engine.log(format!("引擎已拉起 · PID {pid} · {}", entry.display()));
 
     let stdout = child.stdout.take();
@@ -1171,7 +1180,11 @@ fn start_steps(
         rt.started_at = chrono::Local::now().timestamp();
         rt.account = None;
         rt.phase = "starting".into();
-        rt.detail = "引擎启动中…".into();
+        rt.detail = if quick_login {
+            "正在尝试快速登录，超时会自动改为扫码".into()
+        } else {
+            "引擎启动中…".into()
+        };
     }
     write_pid(&dir, pid);
     *engine.qr.lock().unwrap_or_else(|err| err.into_inner()) = None;
@@ -1267,6 +1280,7 @@ fn apply_stage(app: &AppHandle, engine: &Engine, settings: &EngineSettings, line
 fn spawn_qr_watcher(app: AppHandle, engine: Arc<Engine>, settings: EngineSettings, dir: PathBuf) {
     tauri::async_runtime::spawn(async move {
         let mut last_stamp: Option<(u64, u64)> = None;
+        let started = Instant::now();
         loop {
             {
                 let rt = engine.rt();
@@ -1274,6 +1288,36 @@ fn spawn_qr_watcher(app: AppHandle, engine: Arc<Engine>, settings: EngineSetting
                     break;
                 }
             }
+
+            // 快速登录可能卡在 QQ 的自动登录流程里，一直不写二维码。
+            // 超过 60 秒没有二维码就清掉快速登录标记，重开一次扫码登录；
+            // 只做一次，避免在账号侧形成连续登录尝试。
+            if engine.rt().phase == "starting" && started.elapsed() > Duration::from_secs(60) {
+                let marker = dir.join(".sylk-account");
+                if marker.is_file() {
+                    let _ = std::fs::remove_file(&marker);
+                    engine.log("快速登录 60 秒无进展，已清理标记并改用扫码登录");
+                    let app2 = app.clone();
+                    let engine2 = engine.clone();
+                    let settings2 = settings.clone();
+                    std::thread::spawn(move || {
+                        stop(&app2, &engine2, &settings2);
+                        std::thread::sleep(Duration::from_millis(700));
+                        match start_fresh(app2.clone(), engine2.clone(), settings2.clone()) {
+                            Ok(status) => {
+                                let _ = app2.emit(EV_ENGINE, status);
+                            }
+                            Err(err) => {
+                                tracing::warn!("快速登录回退扫码失败：{err}");
+                                engine2.log(format!("改用扫码登录失败：{err}"));
+                                let _ = app2.emit(EV_ENGINE, engine2.status(&settings2));
+                            }
+                        }
+                    });
+                    break;
+                }
+            }
+
             if let Some(path) = find_qrcode(&dir) {
                 if let Ok(meta) = std::fs::metadata(&path) {
                     // QQ 的登录二维码有效期约两分钟，且 NapCat 不会自己换图。
