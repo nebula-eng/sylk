@@ -1,0 +1,80 @@
+[package]
+name = "sylk"
+version = "0.2.4"
+description = "Sylk —— archive, transcribe and organise QQ voice messages"
+authors = ["Sylk contributors"]
+edition = "2021"
+rust-version = "1.80"
+license = "MIT"
+repository = "https://github.com/nebula-eng/sylk"
+
+[lib]
+name = "sylk_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# 正式构建必须开这个：它把前端产物打进二进制，走自定义协议加载。
+# 不开的话，即使是 cargo build --release，程序也仍然去连 devUrl 的 1420 端口，
+# 装到别人机器上就是一片白屏。`tauri dev` 会用 --no-default-features 反向关掉它。
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-webpki-roots"] }
+futures-util = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream", "multipart"] }
+rusqlite = { version = "0.32", features = ["bundled", "chrono"] }
+chrono = { version = "0.4", features = ["serde"] }
+sha2 = "0.10"
+hex = "0.4"
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+which = "6"
+urlencoding = "2"
+once_cell = "1"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+windows-sys = { version = "0.59", features = [
+  "Win32_Foundation",
+  "Win32_Security_Cryptography",
+  "Win32_System_Memory",
+  "Win32_System_Registry",
+  "Win32_System_Threading",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+# 开发构建：去掉调试符号。二进制从 30MB 降到 ~12MB，链接快一倍多，
+# 启动也少一批页错误——debug 信息对跑起来看界面没有价值。
+[profile.dev]
+debug = 0
+incremental = true
+
+# 依赖只在第一次编译时付出代价，之后不再重编。
+[profile.dev.package."*"]
+opt-level = 1
+
+# 不能用自定义档名（比如 release-fast）：tauri-build 只把 PROFILE=="release" 当成
+# 正式发布，其余一律按开发模式处理，会把 devUrl 塞进二进制——装出来的程序去连
+# 本机 1420 端口，没起前端就是白窗口。所以档名只能是 release，速度靠参数调。
+[profile.release]
+codegen-units = 4
+lto = "thin"
+opt-level = "s"
+panic = "abort"
+strip = true

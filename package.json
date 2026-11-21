@@ -1,0 +1,50 @@
+{
+  "name": "sylk",
+  "private": true,
+  "version": "0.2.4",
+  "description": "Sylk —— 把 QQ 语音消息存档、转写、归纳的本地优先桌面应用",
+  "type": "module",
+  "license": "MIT",
+  "author": "Sylk contributors",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "tauri": "tauri",
+    "app:open": "node scripts/open-app.mjs",
+    "app:dev": "tauri dev",
+    "app:rel": "cargo build --release --manifest-path src-tauri/Cargo.toml",
+    "startup": "node scripts/measure-startup.mjs",
+    "mock": "node scripts/mock-napcat.mjs",
+    "mock:prepare": "node scripts/prepare-mock-engine.mjs",
+    "e2e:engine": "node scripts/e2e-engine.mjs",
+    "e2e:features": "node scripts/e2e-features.mjs",
+    "review": "node scripts/review.mjs",
+    "shots": "node scripts/final-shots.mjs",
+    "audit": "node scripts/audit.mjs",
+    "icons": "python scripts/make-icons.py",
+    "build:dist": "node scripts/setup.mjs --dist"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.5",
+    "@tauri-apps/plugin-dialog": "^2.8.4",
+    "@tauri-apps/plugin-opener": "^2.7.3",
+    "lucide-react": "^1.77.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "silk-wasm": "^3.7.1",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.6",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.8",
+    "ws": "^8.23.0"
+  }
+}

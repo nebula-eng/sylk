@@ -1,0 +1,37 @@
+# 忽略本地开发与构建产物
+
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Rust
+src-tauri/target/
+src-tauri/gen/
+
+# 本地镜像配置（每台机器不同，不入库）
+src-tauri/.cargo/
+
+# 联调用的 mock 产物
+.mock-napcat/
+
+# 编辑器 / 系统
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+
+# WorkBuddy 工作区文件
+.workbuddy/
+
+# 本地临时目录（实验、下载、第三方引擎取证，绝不入库）
+.tmp/
+
+# 引擎包属第三方二进制，不入库（见 src-tauri/engine/README.md）
+src-tauri/engine/*.zip
+
+# setup.mjs 在 --engine 构建时临时生成的资源配置
+src-tauri/tauri.engine.conf.json
