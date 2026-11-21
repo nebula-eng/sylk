@@ -9,7 +9,7 @@ const NAV: { view: View; label: string; icon: typeof MessageSquare }[] = [
   { view: "jobs", label: "任务", icon: ListChecks },
 ];
 
-export function Rail() {
+export function Rail({ minimal = false }: { minimal?: boolean }) {
   const view = useApp((state) => state.view);
   const setView = useApp((state) => state.setView);
   const connection = useApp((state) => state.connection);
@@ -42,25 +42,27 @@ export function Rail() {
       </div>
 
       <div className="rail__nav">
-        {NAV.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.view}
-              type="button"
-              className={cn("rail-btn", view === item.view && "is-active")}
-              title={item.label}
-              aria-label={item.label}
-              aria-current={view === item.view ? "page" : undefined}
-              onClick={() => setView(item.view)}
-            >
-              <Icon size={18} strokeWidth={1.9} />
-              {item.view === "jobs" && (pending > 0 || failed > 0) ? (
-                <span className="rail-btn__badge">{pending + failed}</span>
-              ) : null}
-            </button>
-          );
-        })}
+        {minimal
+          ? null
+          : NAV.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.view}
+                  type="button"
+                  className={cn("rail-btn", view === item.view && "is-active")}
+                  title={item.label}
+                  aria-label={item.label}
+                  aria-current={view === item.view ? "page" : undefined}
+                  onClick={() => setView(item.view)}
+                >
+                  <Icon size={18} strokeWidth={1.9} />
+                  {item.view === "jobs" && (pending > 0 || failed > 0) ? (
+                    <span className="rail-btn__badge">{pending + failed}</span>
+                  ) : null}
+                </button>
+              );
+            })}
       </div>
 
       <div className="rail__foot">

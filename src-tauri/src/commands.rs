@@ -89,6 +89,44 @@ pub async fn connect(app: AppHandle) -> AppResult<ConnectionState> {
         // 上次没下完的、解码失败的，连上之后自动补一遍，不用用户去翻任务队列。
         let _ = pipeline::requeue_missing(&inner);
         let _ = tauri::Emitter::emit(&app, crate::state::EV_JOBS, serde_json::json!({}));
+
+        // 「自动同步」开关：登录后逐个会话拉最近一页，把语音补进队列。
+        // 失败只记日志，不打断连接；手动「同步历史」仍然可用。
+        if inner.settings_snapshot().engine.auto_sync {
+            let app_bg = app.clone();
+            let inner_bg = inner.clone();
+            tauri::async_runtime::spawn(async move {
+                if inner_bg
+                    .syncing
+                    .swap(true, std::sync::atomic::Ordering::SeqCst)
+                {
+                    return;
+                }
+                let conversations = {
+                    let conn = inner_bg.db();
+                    db::list_conversations(&conn, "").unwrap_or_default()
+                };
+                for conversation in conversations {
+                    if inner_bg.is_stopping() {
+                        break;
+                    }
+                    if let Err(err) =
+                        pipeline::sync_history(&app_bg, &inner_bg, conversation.id, 1).await
+                    {
+                        tracing::warn!("自动同步 {} 失败：{err}", conversation.title);
+                    }
+                }
+                inner_bg
+                    .syncing
+                    .store(false, std::sync::atomic::Ordering::SeqCst);
+                let _ = tauri::Emitter::emit(
+                    &app_bg,
+                    EV_VOICES,
+                    serde_json::json!({ "reason": "auto-sync" }),
+                );
+                let _ = tauri::Emitter::emit(&app_bg, crate::state::EV_JOBS, serde_json::json!({}));
+            });
+        }
     }
     result.live = inner.connection().live;
     inner.set_connection(&app, result.clone());
@@ -317,6 +355,21 @@ pub fn enqueue_transcribe(state: State<'_, AppState>, limit: Option<u32>) -> App
         db::enqueue_job(&conn, "transcribe", *id)?;
     }
     Ok(ids.len() as i64)
+}
+
+#[tauri::command]
+pub fn transcribe_voice(app: AppHandle, id: i64) -> AppResult<()> {
+    let inner = inner(&app);
+    if !inner.settings_snapshot().asr.enabled {
+        return Err(AppError::msg("请先在设置中启用并配置转写引擎"));
+    }
+    let conn = inner.db();
+    db::voice(&conn, id)?.ok_or_else(|| AppError::msg("语音不存在"))?;
+    db::requeue_job(&conn, "transcribe", id)?;
+    db::set_transcript_status(&conn, id, "pending", "")?;
+    let _ = tauri::Emitter::emit(&app, crate::state::EV_JOBS, serde_json::json!({}));
+    let _ = tauri::Emitter::emit(&app, EV_VOICES, serde_json::json!({ "voiceId": id }));
+    Ok(())
 }
 
 #[tauri::command]

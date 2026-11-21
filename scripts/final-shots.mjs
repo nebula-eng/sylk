@@ -54,7 +54,7 @@ await send("Page.enable");
 await send("Runtime.enable");
 await send("Emulation.setDeviceMetricsOverride", {
   width: 1440,
-  height: 900,
+  height: 920,
   deviceScaleFactor: 2,
   mobile: false,
 });
@@ -71,6 +71,13 @@ const evaluate = async (expression) => {
   return result.value;
 };
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const hideDemoBanner = () =>
+  evaluate(`(() => {
+    document.querySelector('.demo-banner')?.remove();
+    // 浏览器扩展（如豆包）会往页面注入悬浮头像，截图前清掉，避免拍到用户自己的内容。
+    document.querySelectorAll('doubao-ai-csui, [id^="doubao-ai"], [class*="doubao-ai"]').forEach((el) => el.remove());
+    return true;
+  })()`);
 const shot = async (name) => {
   await wait(450);
   const { data } = await send("Page.captureScreenshot", { format: "png" });
@@ -98,6 +105,8 @@ const lightenOverlay = () =>
 await send("Page.navigate", { url: base });
 await wait(1200);
 await evaluate(`localStorage.setItem('sylk.preview.login','0'); location.reload(); true`);
+await wait(1800);
+await hideDemoBanner();
 await wait(2600);
 console.log("登录页");
 await shot("01-login-light");
@@ -105,6 +114,7 @@ await shot("01-login-light");
 /* 主界面 */
 await evaluate(`localStorage.removeItem('sylk.preview.login'); location.reload(); true`);
 await wait(2600);
+await hideDemoBanner();
 console.log("主界面");
 await shot("02-main-light");
 
@@ -182,7 +192,7 @@ await shot("07-settings-asr");
 /* 搜索 */
 await closeOverlay();
 await wait(300);
-await evaluate(`(() => { const b=document.querySelector('.icon-btn[aria-label="全局搜索"]'); if(b) b.click(); return !!b; })()`);
+await evaluate(`(() => { const b=document.querySelector('.icon-btn[aria-label="搜索"]'); if(b) b.click(); return !!b; })()`);
 await wait(400);
 await evaluate(`(() => {
   const input = document.querySelector('.palette__field input');
@@ -200,12 +210,16 @@ await shot("08-search-light");
 /* 深色 */
 await closeOverlay();
 await wait(300);
+await clickRail(0);
+await wait(500);
 await evaluate(`document.documentElement.dataset.theme='dark'; true`);
-await wait(400);
+await wait(500);
+console.log("深色主界面");
 await shot("09-main-dark");
 
 await evaluate(`localStorage.setItem('sylk.preview.login','0'); location.reload(); true`);
 await wait(2600);
+await hideDemoBanner();
 await evaluate(`document.documentElement.dataset.theme='dark'; true`);
 await wait(500);
 await shot("10-login-dark");

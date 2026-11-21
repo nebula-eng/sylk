@@ -672,6 +672,22 @@ pub fn enqueue_job(conn: &Connection, kind: &str, ref_id: i64) -> AppResult<()> 
     Ok(())
 }
 
+/// 用户明确要求「重新转写这一条」：即使之前已经完成过，也强制回到 pending。
+pub fn requeue_job(conn: &Connection, kind: &str, ref_id: i64) -> AppResult<()> {
+    let ts = now();
+    conn.execute(
+        "INSERT INTO jobs (kind, ref_id, status, created_at, updated_at)
+         VALUES (?1, ?2, 'pending', ?3, ?3)
+         ON CONFLICT(kind, ref_id) DO UPDATE SET
+            status = 'pending',
+            attempts = 0,
+            last_error = '',
+            updated_at = excluded.updated_at",
+        params![kind, ref_id, ts],
+    )?;
+    Ok(())
+}
+
 pub fn next_job(conn: &Connection, kind: &str) -> AppResult<Option<Job>> {
     let row = conn
         .query_row(

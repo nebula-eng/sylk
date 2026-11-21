@@ -1,6 +1,6 @@
 [package]
 name = "sylk"
-version = "0.2.8"
+version = "0.3.0"
 description = "Sylk —— archive, transcribe and organise QQ voice messages"
 authors = ["Sylk contributors"]
 edition = "2021"

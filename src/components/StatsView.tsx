@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Flame,
   Users,
-  Star,
   ChevronRight,
 } from "lucide-react";
 
@@ -39,7 +38,7 @@ export function StatsView() {
   if (!stats || stats.overview.voices === 0) {
     return (
       <div className="main">
-        <PageHead title="统计" subtitle="归档数据的汇总视图" onRefresh={() => void loadStats()} />
+        <PageHead title="统计" subtitle="已保存语音的汇总视图" onRefresh={() => void loadStats()} />
         <div className="empty">
           <div className="empty__title">暂无数据</div>
           <div className="empty__text">接入账号并同步历史后，这里会显示统计。</div>
@@ -117,7 +116,7 @@ export function StatsView() {
                         style={{ width: `${percent(item.totalMs, maxConversationMs)}%` }}
                       />
                     </span>
-                    <span className="bar-row__value">{item.voices} 条</span>
+                    <span className="bar-row__value">{formatDuration(item.totalMs)}</span>
                     <ChevronRight size={12} className="bar-row__go" />
                   </button>
                 );
@@ -127,7 +126,7 @@ export function StatsView() {
 
           <div className="panel" style={{ marginTop: 14 }}>
             <div className="panel__head">
-              <Star size={13} color="var(--text-3)" />
+              <Users size={13} color="var(--text-3)" />
               <span className="panel__title">发送者排行</span>
               <span className="panel__hint">按累计时长排序</span>
             </div>

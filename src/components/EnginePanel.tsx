@@ -299,10 +299,10 @@ export function EnginePanel({
           <div className="form-row form-row--inline">
             <div style={{ flex: 1 }}>
               <div className="form-label" style={{ marginBottom: 2 }}>
-                登录后自动同步会话
+                登录后自动同步语音
               </div>
               <div className="form-hint" style={{ marginTop: 0 }}>
-                登录后拉取一次群聊与好友列表
+                登录后拉取每个会话最近一页语音，放进下载任务；关闭后只同步会话列表
               </div>
             </div>
             <Switch

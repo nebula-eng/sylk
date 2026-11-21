@@ -18,12 +18,15 @@ export function SearchPalette() {
   const [results, setResults] = useState<Voice[]>([]);
   const [cursor, setCursor] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const requestRef = useRef(0);
 
   useEffect(() => {
     if (open) {
       setKeyword("");
       setResults([]);
+      setError("");
       setCursor(0);
       window.setTimeout(() => inputRef.current?.focus(), 30);
     }
@@ -34,26 +37,38 @@ export function SearchPalette() {
     const text = keyword.trim();
     if (!text) {
       setResults([]);
+      setError("");
+      setBusy(false);
       return;
     }
-    let cancelled = false;
+    const request = ++requestRef.current;
     setBusy(true);
+    setError("");
     const timer = window.setTimeout(async () => {
       try {
         const page = await api.queryVoices({ keyword: text, limit: 30 });
-        if (!cancelled) {
+        if (request === requestRef.current) {
           setResults(page.items);
           setCursor(0);
         }
+      } catch (err) {
+        if (request === requestRef.current) {
+          setResults([]);
+          setError(err instanceof Error ? err.message : String(err));
+        }
       } finally {
-        if (!cancelled) setBusy(false);
+        if (request === requestRef.current) setBusy(false);
       }
     }, 180);
     return () => {
-      cancelled = true;
       window.clearTimeout(timer);
     };
   }, [keyword, open]);
+
+  useEffect(() => {
+    const element = document.querySelector(".palette-item.is-cursor");
+    element?.scrollIntoView({ block: "nearest" });
+  }, [cursor]);
 
   const conversationTitles = useMemo(() => {
     const map = new Map<number, string>();
@@ -81,13 +96,14 @@ export function SearchPalette() {
   };
 
   return (
-    <Modal open={open} onClose={() => setOpen(false)} align="top">
+    <Modal open={open} onClose={() => setOpen(false)} align="top" label="搜索语音">
       <div className="palette">
         <div className="palette__field">
           <Search size={16} color="var(--text-3)" />
           <input
             ref={inputRef}
             value={keyword}
+            aria-label="搜索转写文本、发送者、会话名或标签"
             placeholder="搜索转写文本、发送者、会话名、标签"
             onChange={(event) => setKeyword(event.target.value)}
             onKeyDown={onKeyDown}
@@ -98,7 +114,11 @@ export function SearchPalette() {
         <div className="palette__results">
           {!keyword.trim() ? (
             <div className="form-hint" style={{ padding: "14px 12px" }}>
-              输入关键词开始搜索。
+              输入关键词开始搜索；Ctrl K 随时打开这里。
+            </div>
+          ) : error ? (
+            <div className="form-hint" style={{ padding: "14px 12px" }}>
+              搜索失败：{error}
             </div>
           ) : results.length === 0 ? (
             <div className="form-hint" style={{ padding: "14px 12px" }}>

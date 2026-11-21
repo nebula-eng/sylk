@@ -263,6 +263,7 @@ pub fn run() {
             commands::delete_voice,
             commands::enqueue_missing,
             commands::enqueue_transcribe,
+            commands::transcribe_voice,
             commands::list_jobs,
             commands::retry_jobs,
             commands::clear_jobs,

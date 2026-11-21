@@ -4,9 +4,9 @@
 
 发现安全相关的问题（例如本地文件读写越界、注入、凭据泄露、依赖供应链风险），请**不要开公开 issue**。
 
-优先用 GitHub 的 Private vulnerability reporting（仓库启用后为
-`https://github.com/<仓库>/security/advisories/new`）。如果不可用，发邮件到仓库维护者邮箱，
-标题带上 `[Sylk Security]`。
+优先用 GitHub 的 Private vulnerability reporting：
+`https://github.com/nebula-eng/sylk/security/advisories/new`。
+如果这个入口不可用，开一个不含细节的公开 issue，请维护者开启私下渠道后再补充信息。
 
 请尽量提供：
 

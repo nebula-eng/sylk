@@ -45,7 +45,7 @@ start(settings)
   ├─ write_configs    覆盖写 onebot11.json + webui.json（host 永远 127.0.0.1）
   ├─ spawn            CREATE_NO_WINDOW；经典模式设 NAPCAT_* 环境变量，V8 模式直接拉起 QQ.exe
   ├─ spawn_reader     逐行入环形缓冲 + 阶段解析（token 脱敏）
-  ├─ spawn_qr_watcher 700ms 轮询 qrcode.png 的 size+mtime；过期自动重启换码
+  ├─ spawn_qr_watcher 700ms 轮询 qrcode.png 的 size+mtime；过期只清旧图并提示，由用户手动刷新
   └─ spawn_watchdog   2s 一轮：try_wait + get_login_info
 ```
 
@@ -64,7 +64,7 @@ start(settings)
 
 `sync_index` 调 `get_group_list` + `get_friend_list`，把结果 upsert 进 `conversations`。这个动作很轻，连接成功后自动跑一次。
 
-### 2. 历史回溯
+### 2. 历史同步
 
 ```
 for page in 0..max_pages:
@@ -134,7 +134,7 @@ jobs(
 
 设计取舍：
 
-- **`UNIQUE(account_uin, msg_id)`** 是幂等的来源。同一消息被实时事件和历史回溯同时碰到，只有第一次插入成功。
+- **`UNIQUE(account_uin, msg_id)`** 是幂等的来源。同一消息被实时事件和历史同步同时碰到，只有第一次插入成功。
 - **`voice_count` / `total_ms` / `last_voice_at` 是冗余字段**，每次入库后由 `recompute_conversation_stats` 重算。会话列表要按"最近有语音"排序，每次聚合 `voices` 表在几千条时还能接受，上万条就会拖慢首屏 —— 冗余换响应速度。
 - **`peaks` 存 JSON 数组**（96 个 0-100 的整数）。二进制打包能省空间，但调试时看不懂，收益不值。
 - **不加 FTS5。** 个人账号的语音量级在几千到几万，`LIKE '%kw%'` 配合索引完全够用；引入 FTS 要处理分词器与中文，复杂度不划算。真到十万级再换。
@@ -156,14 +156,14 @@ jobs(
 
 | 事件 | 载荷 | 用途 |
 |---|---|---|
-| `sylk://progress` | `ProgressEvent` | 回溯进度条 |
+| `sylk://progress` | `ProgressEvent` | 同步进度条 |
 | `sylk://connection` | `ConnectionState` | 连接状态与账号 |
 | `sylk://voices` | `{reason, voiceId?, conversationId?}` | 语音列表需要刷新 |
 | `sylk://jobs` | `{}` | 任务队列需要刷新 |
 | `sylk://toast` | `{kind, text}` | 后台失败提示 |
 | `sylk://decode` | `{voiceId}` | 需要前端把 SILK 解成 WAV |
 
-前端对 `voices` 事件做了 350 ms 防抖：批量回溯时一秒内可能插入几十条，逐条刷新会卡。
+前端对 `voices` 事件做了 350 ms 防抖：批量同步时一秒内可能插入几十条，逐条刷新会卡。
 
 ## 错误处理
 

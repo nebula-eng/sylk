@@ -58,7 +58,7 @@ jobs:
       - name: 单元测试
         run: cargo test --manifest-path src-tauri/Cargo.toml --all-targets
 
-  # 每次提交都验一遍「能不能打出安装包」。这里只上传临时产物；
+  # 手动触发时验一遍「能不能打出安装包」，避免临时改依赖或资源路径后才在发布时发现。
   # 正式发版另有 release.yml，打 tag 时挂到 Releases。
   bundle:
     name: 打包（Windows）

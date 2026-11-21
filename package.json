@@ -1,7 +1,10 @@
 {
   "name": "sylk",
   "private": true,
-  "version": "0.2.8",
+  "engines": {
+    "node": ">=20"
+  },
+  "version": "0.3.0",
   "description": "Sylk —— 把 QQ 语音消息存档、转写、归纳的本地优先桌面应用",
   "type": "module",
   "license": "MIT",

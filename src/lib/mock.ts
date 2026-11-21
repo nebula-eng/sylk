@@ -248,6 +248,7 @@ export const mockApi: Api = {
   },
   enqueueMissing: () => delay(0),
   enqueueTranscribe: (limit) => delay(Math.min(limit ?? 200, 12)),
+  transcribeVoice: () => delay(undefined),
   listJobs: () => delay([...jobs]),
   retryJobs: () => {
     jobs = jobs.map((job) => (job.status === "failed" ? { ...job, status: "pending", attempts: 0 } : job));

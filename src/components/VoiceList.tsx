@@ -15,12 +15,13 @@ import {
   Trash2,
   ListChecks,
   PanelRightOpen,
+  FileDown,
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
 import { formatClock, formatDuration, formatTime, groupByDay } from "@/lib/format";
 import { usePlayer } from "@/lib/player";
-import { useApp, type RangeKey } from "@/lib/store";
+import { rangeBounds, useApp, type RangeKey } from "@/lib/store";
 import type { Voice } from "@/lib/types";
 import { Avatar, Badge, Button, IconButton, cn } from "@/components/ui/primitives";
 import { Waveform } from "@/components/Waveform";
@@ -91,6 +92,36 @@ export function VoiceList() {
       toast("error", error instanceof Error ? error.message : String(error));
     } finally {
       setExporting(false);
+    }
+  };
+
+  const exportCsv = async () => {
+    if (!isTauri) {
+      toast("info", "浏览器预览模式不能保存 CSV");
+      return;
+    }
+    try {
+      const { save } = await import("@tauri-apps/plugin-dialog");
+      const picked = await save({
+        title: "导出当前筛选为 CSV",
+        defaultPath: `sylk-voices-${new Date().toISOString().slice(0, 10)}.csv`,
+        filters: [{ name: "CSV", extensions: ["csv"] }],
+      });
+      if (!picked) return;
+      const bounds = rangeBounds(range);
+      const report = await api.exportCsv(picked, {
+        conversationId: scope === "all" ? null : activeId,
+        keyword,
+        onlyStarred,
+        onlyTranscribed,
+        senderId: senderFilter,
+        from: bounds.from,
+        to: bounds.to,
+        limit: 500,
+      });
+      toast("success", `已导出 CSV → ${report.path}`);
+    } catch (error) {
+      toast("error", error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -190,11 +221,9 @@ export function VoiceList() {
               </Button>
             </>
           )}
-          {detailOpen ? null : (
-            <IconButton label="展开详情（E）" onClick={() => setDetailOpen(true)}>
-              <PanelRightOpen size={16} />
-            </IconButton>
-          )}
+          <IconButton label="展开详情（E）" onClick={() => setDetailOpen(true)}>
+            <PanelRightOpen size={16} />
+          </IconButton>
         </div>
       </header>
 
@@ -267,6 +296,16 @@ export function VoiceList() {
 
         <button
           type="button"
+          className="icon-btn"
+          title="导出当前筛选为 CSV"
+          aria-label="导出当前筛选为 CSV"
+          onClick={() => void exportCsv()}
+        >
+          <FileDown size={15} />
+        </button>
+
+        <button
+          type="button"
           className={cn("icon-btn", selectMode && "is-on")}
           title={selectMode ? "退出多选" : "多选"}
           aria-label="多选"
@@ -310,7 +349,7 @@ export function VoiceList() {
         <div className="bulk-bar">
           <span className="bulk-bar__count">已选 {selected.size} 项</span>
           <Button size="sm" variant="ghost" onClick={() => selectAllVisible()}>
-            全选本页
+            全选结果
           </Button>
           <Button size="sm" variant="ghost" onClick={() => clearSelected()}>
             取消选择
@@ -332,14 +371,20 @@ export function VoiceList() {
             disabled={selected.size === 0}
             onClick={() => void bulkTranscribe()}
           >
-            转写
+            转写所选
           </Button>
           <Button
             size="sm"
             variant="danger"
             icon={<Trash2 size={12} />}
             disabled={selected.size === 0}
-            onClick={() => void bulkDelete()}
+            onClick={() => {
+              if (selected.size === 0) return;
+              const confirmed = window.confirm(
+                `删除所选 ${selected.size} 条语音？音频原件和转写会一并删除，无法恢复。`,
+              );
+              if (confirmed) void bulkDelete();
+            }}
           >
             删除
           </Button>

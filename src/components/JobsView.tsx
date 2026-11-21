@@ -1,4 +1,4 @@
-import { Download, RefreshCw, RotateCw, Trash2, FileText, AlertTriangle } from "lucide-react";
+import { Download, RefreshCw, RotateCw, FileText, AlertTriangle } from "lucide-react";
 
 import { api } from "@/lib/api";
 import { formatRelative } from "@/lib/format";
@@ -26,15 +26,6 @@ export function JobsView() {
       await api.retryJobs();
       await loadJobs();
       toast("success", "失败任务已重新入队");
-    } catch (error) {
-      toast("error", error instanceof Error ? error.message : String(error));
-    }
-  };
-
-  const clear = async () => {
-    try {
-      await api.clearJobs();
-      await loadJobs();
     } catch (error) {
       toast("error", error instanceof Error ? error.message : String(error));
     }
@@ -80,9 +71,6 @@ export function JobsView() {
           >
             重试失败
           </Button>
-          <Button variant="ghost" size="sm" icon={<Trash2 size={13} />} onClick={() => void clear()}>
-            清空记录
-          </Button>
         </div>
       </header>
 
@@ -90,7 +78,7 @@ export function JobsView() {
         {jobs.length === 0 ? (
           <div className="empty">
             <div className="empty__title">暂无任务</div>
-            <div className="empty__text">下载与转写任务会显示在这里，含进度和失败原因。</div>
+            <div className="empty__text">下载与转写任务会显示在这里；失败任务可以重试，原因会写在任务下方。</div>
           </div>
         ) : (
           jobs.map((job) => (

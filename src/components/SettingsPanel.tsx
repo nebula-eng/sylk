@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Cog,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
@@ -28,7 +29,7 @@ type Tab = "engine" | "connection" | "library" | "asr" | "appearance" | "privacy
 const TABS: { id: Tab; label: string; icon: typeof Plug }[] = [
   { id: "engine", label: "引擎", icon: Cog },
   { id: "connection", label: "连接", icon: Plug },
-  { id: "library", label: "归档", icon: FolderCog },
+  { id: "library", label: "媒体库", icon: FolderCog },
   { id: "asr", label: "转写", icon: AudioLines },
   { id: "appearance", label: "外观", icon: Palette },
   { id: "privacy", label: "隐私", icon: Shield },
@@ -65,6 +66,7 @@ export function SettingsPanel() {
   useEffect(() => {
     if (!open) return;
     if (tab === "asr") {
+      setProbe(null);
       void api.probeAsr().then(setProbe).catch(() => setProbe(null));
     }
     if (tab === "privacy") {
@@ -76,6 +78,12 @@ export function SettingsPanel() {
   }, [open, tab, draft?.asr.engine, draft?.asr.modelPath, draft?.asr.whisperPath]);
 
   if (!draft) return null;
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(settings);
+  const close = () => {
+    if (dirty && !window.confirm("设置尚未保存，要放弃这次修改吗？")) return;
+    setOpen(false);
+  };
 
   const patch = (part: Partial<Settings>) => setDraft({ ...draft, ...part });
   const patchNapcat = (part: Partial<Settings["napcat"]>) =>
@@ -97,7 +105,6 @@ export function SettingsPanel() {
       toast("error", error instanceof Error ? error.message : String(error));
     }
   };
-
   const pickPath = async (
     apply: (value: string) => void,
     options: { directory?: boolean; filters?: { name: string; extensions: string[] }[] },
@@ -114,6 +121,7 @@ export function SettingsPanel() {
   const testConnection = async () => {
     setTesting(true);
     try {
+      // 测试连接需要先把草稿写入后端，因此这里会保存当前设置。
       await saveSettings(draft, { silent: true });
       const result = await api.testConnection();
       toast(result.status === "online" ? "success" : "error", result.message);
@@ -131,11 +139,14 @@ export function SettingsPanel() {
   };
 
   return (
-    <Modal open={open} onClose={() => setOpen(false)}>
+    <Modal open={open} onClose={close} label="设置">
       <div className="settings">
         <div className="settings__head">
-          <div className="settings__title">设置</div>
-          <IconButton label="关闭" style={{ marginLeft: "auto" }} onClick={() => setOpen(false)}>
+          <div className="settings__title">
+            设置
+            {dirty ? <span className="settings__dirty">未保存</span> : null}
+          </div>
+          <IconButton label="关闭" style={{ marginLeft: "auto" }} onClick={close}>
             <X size={16} />
           </IconButton>
         </div>
@@ -231,7 +242,7 @@ export function SettingsPanel() {
 
                 <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
                   <Button variant="ghost" onClick={() => void testConnection()} disabled={testing}>
-                    {testing ? "正在测试…" : "测试连接"}
+                    {testing ? "正在测试…" : "保存并测试连接"}
                   </Button>
                   <Button variant="primary" onClick={() => void doConnect()}>
                     保存并连接
@@ -326,7 +337,7 @@ export function SettingsPanel() {
                   </Field>
                 </div>
 
-                <Field label="单会话最多回溯页数" hint="限制翻页上限，默认 40">
+                <Field label="单会话最多同步页数" hint="每次同步最多翻多少页，默认 40">
                   <input
                     className="input"
                     type="number"
@@ -465,11 +476,22 @@ export function SettingsPanel() {
                 )}
 
                 <div className="check-line">
-                  <span className={cn("check-line__icon", probe?.available ? "is-ok" : "is-bad")}>
-                    {probe?.available ? <Check size={11} /> : <ShieldAlert size={11} />}
+                  <span
+                    className={cn(
+                      "check-line__icon",
+                      probe === null ? "is-pending" : probe.available ? "is-ok" : "is-bad",
+                    )}
+                  >
+                    {probe === null ? (
+                      <RefreshCw size={11} className="spin" />
+                    ) : probe.available ? (
+                      <Check size={11} />
+                    ) : (
+                      <ShieldAlert size={11} />
+                    )}
                   </span>
-                  <span>{probe?.available ? "引擎就绪" : "引擎不可用"}</span>
-                  <span className="check-line__detail">{probe?.detail ?? "正在检测…"}</span>
+                  <span>{probe === null ? "正在检测…" : probe.available ? "引擎就绪" : "引擎不可用"}</span>
+                  <span className="check-line__detail">{probe?.detail ?? "正在读取引擎状态"}</span>
                 </div>
 
                 <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
@@ -527,7 +549,9 @@ export function SettingsPanel() {
                       关闭窗口时最小化到托盘
                     </div>
                     <div className="form-hint" style={{ marginTop: 0 }}>
-                      关闭后点 × 直接退出，实时接收同时停止
+                      {draft.closeToTray
+                        ? "关闭窗口后收进托盘，实时接收继续；从托盘退出才会停止。"
+                        : "关闭窗口直接退出，实时接收同时停止。"}
                     </div>
                   </div>
                   <Switch
@@ -682,8 +706,8 @@ export function SettingsPanel() {
 
                 <div className="form-hint" style={{ lineHeight: 1.75 }}>
                   语音、转写与数据库默认保存在本机；只有你主动开启云端转写时，音频才会发到你配置的接口。
-                  隐私与数据清理选项在「隐私」页。请遵守服务条款与当地法律，仅保存你有权留存的内容。
-                  NapCat 为第三方实现，使用风险需自行评估。
+                  API Key 用 Windows DPAPI 加密保存。数据清理选项在「隐私」页。
+                  使用第三方引擎或转写服务前，请自行确认其条款与账号风险。
                 </div>
 
                 <div className="divider" />
@@ -693,11 +717,10 @@ export function SettingsPanel() {
                     variant="ghost"
                     icon={<Wand2 size={13} />}
                     onClick={() => {
-                      setOpen(false);
-                      void useApp.getState().refreshEngine();
+                      setTab("engine");
                     }}
                   >
-                    引擎状态
+                    引擎状态与自检
                   </Button>
                 </div>
 
@@ -712,7 +735,7 @@ export function SettingsPanel() {
                         onClick={async () => {
                           try {
                             await api.wipeArchive();
-                            toast("success", "索引已清空，音频文件保留");
+                            toast("success", "语音索引已清空，媒体文件保留");
                             setConfirmWipe(false);
                             await useApp.getState().bootstrap();
                           } catch (error) {
@@ -720,7 +743,7 @@ export function SettingsPanel() {
                           }
                         }}
                       >
-                        确认清空索引
+                        确认清空
                       </Button>
                       <Button variant="ghost" onClick={() => setConfirmWipe(false)}>
                         取消
@@ -728,11 +751,11 @@ export function SettingsPanel() {
                     </>
                   ) : (
                     <Button variant="ghost" icon={<FileText size={13} />} onClick={() => setConfirmWipe(true)}>
-                      清空归档索引
+                      清空语音索引
                     </Button>
                   )}
                   <span className="form-hint" style={{ marginLeft: "auto", marginTop: 0 }}>
-                    不删除媒体库中的音频
+                    不删除媒体库中的音频文件
                   </span>
                 </div>
               </>
@@ -745,11 +768,11 @@ export function SettingsPanel() {
             设置仅保存在本机
           </span>
           <span className="grow" />
-          <Button variant="ghost" onClick={() => setOpen(false)}>
+          <Button variant="ghost" onClick={close}>
             取消
           </Button>
           <Button variant="primary" onClick={() => void save()}>
-            保存
+            保存更改
           </Button>
         </div>
       </div>

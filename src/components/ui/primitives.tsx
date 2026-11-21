@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 import { hueFor, initials } from "@/lib/format";
@@ -169,25 +169,68 @@ export function Modal({
   onClose,
   children,
   align = "center",
+  label = "对话框",
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   align?: "center" | "top";
+  label?: string;
 }) {
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overlay = overlayRef.current;
+    const focusables = () =>
+      [
+        ...(overlay?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? []),
+      ].filter((element) => element.offsetParent !== null);
+    requestAnimationFrame(() => {
+      focusables()[0]?.focus();
+    });
     const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const list = focusables();
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      previous?.focus?.();
+    };
+  }, [open]);
 
   if (!open) return null;
   return (
     <div
+      ref={overlayRef}
       className="overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+      tabIndex={-1}
       style={align === "top" ? { alignItems: "flex-start" } : undefined}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();

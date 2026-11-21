@@ -24,9 +24,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# WorkBuddy 工作区文件
-.workbuddy/
-
 # 本地临时目录（实验、下载、第三方引擎取证，绝不入库）
 .tmp/
 

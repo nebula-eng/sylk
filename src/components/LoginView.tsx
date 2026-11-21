@@ -82,16 +82,17 @@ export function LoginView() {
     void refreshQr();
   }, [refreshQr]);
 
-  // 引擎装好了但没在跑，就直接拉起来 —— 用户不该先点一下「启动」才看到二维码。
+  // 引擎装好了但没在跑：只有开启「随应用自动启动」时才自动拉起。
   useEffect(() => {
     if (autoStarted.current) return;
     if (!engine) return;
     if (engine.mode === "external") return;
     if (!engine.available) return;
     if (engine.phase !== "idle") return;
+    if (settings?.engine.autoStart === false) return;
     autoStarted.current = true;
     void startEngine();
-  }, [engine, startEngine]);
+  }, [engine, settings?.engine.autoStart, startEngine]);
 
   const pickDir = async () => {
     if (!isTauri) {
@@ -122,7 +123,7 @@ export function LoginView() {
     const { open } = await import("@tauri-apps/plugin-dialog");
     const picked = await open({
       multiple: false,
-      title: "选择 NapCat 压缩包",
+      title: "选择引擎包（zip）",
       filters: [{ name: "Zip 压缩包", extensions: ["zip"] }],
     });
     if (typeof picked !== "string") return;
@@ -131,6 +132,7 @@ export function LoginView() {
       const status = await api.engineInstallArchive(picked);
       useApp.setState({ engine: status });
       await refreshQr();
+      toast("success", "引擎包已导入，正在启动");
     } catch (error) {
       toast("error", error instanceof Error ? error.message : String(error));
     } finally {
@@ -149,7 +151,7 @@ export function LoginView() {
       if (found.length === 0) {
         toast(
           "info",
-          "没有在下载、桌面、文档和盘符根目录找到现成引擎。可以用「指定引擎目录」或「导入引擎包」。",
+          "没有在下载、桌面、文档和盘符根目录找到现成引擎。可以用指定引擎目录或导入引擎包；也可以到 设置 → 引擎 手动指定。"
         );
         return;
       }
@@ -288,7 +290,7 @@ export function LoginView() {
                 </button>
                 <span>·</span>
                 <button type="button" onClick={() => void switchToExternal()}>
-                  连接远程实例
+                  使用外部 NapCat
                 </button>
               </div>
             </div>
@@ -363,7 +365,7 @@ export function LoginView() {
                         : phase === "online"
                           ? "登录完成"
                           : engine?.detail?.includes("二维码已过期")
-                            ? "二维码已过期，点下方「刷新二维码」"
+                            ? "二维码已过期。点下方刷新二维码重新生成。"
                             : "正在生成二维码"}
                     </span>
                   </div>
@@ -389,9 +391,10 @@ export function LoginView() {
                   type="button"
                   className="login__link"
                   onClick={() => {
-                    // 二维码由引擎生成，本地只有缓存图；过期后必须重启引擎换新码。
+                    // 二维码由引擎生成，本地只有缓存图；过期后需要重启引擎换新码。
                     void restartEngine();
                   }}
+                  title="重启引擎并生成新的二维码"
                 >
                   <RefreshCw size={11} />
                   刷新二维码
@@ -433,16 +436,8 @@ export function LoginView() {
 
           {!needsPrepare && phase !== "online" && phase !== "error" ? (
             <div className="login__actions">
-              <button
-                type="button"
-                className="login__link"
-                onClick={() => void restartEngine()}
-              >
-                重启引擎
-              </button>
-              <span>·</span>
               <button type="button" className="login__link" onClick={() => void pickDir()}>
-                更换目录
+                更换引擎目录
               </button>
             </div>
           ) : null}

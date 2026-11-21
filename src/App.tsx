@@ -29,6 +29,7 @@ export default function App() {
   const bootstrap = useApp((state) => state.bootstrap);
   const setProgress = useApp((state) => state.setProgress);
   const refreshEngine = useApp((state) => state.refreshEngine);
+  const setDetailOpen = useApp((state) => state.setDetailOpen);
 
   const decoding = useRef<Set<number>>(new Set());
 
@@ -84,6 +85,17 @@ export default function App() {
     return () => media.removeEventListener("change", handler);
   }, []);
 
+  // 窗口窄到放不下三栏时，详情面板默认收起，改成点按钮打开的覆盖式抽屉。
+  // 必须等设置加载完再判断，否则会被 bootstrap 回填的 showDetail 覆盖。
+  const narrowDetailInit = useRef(false);
+  useEffect(() => {
+    if (!settings || narrowDetailInit.current) return;
+    narrowDetailInit.current = true;
+    if (window.matchMedia("(max-width: 1150px)").matches) {
+      useApp.getState().setDetailOpen(false);
+    }
+  }, [settings]);
+
   // 引擎状态轮询：没登录时看紧一点，登录后只做心跳。
   const loggedIn = engine?.mode === "external" || engine?.phase === "online";
   useEffect(() => {
@@ -97,20 +109,31 @@ export default function App() {
       const target = event.target as HTMLElement | null;
       const typing =
         target &&
-        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable);
+      // 键盘焦点在按钮/链接/开关/输入框上时，Space 和 Enter 属于控件自己，
+      // 不能抢去控制播放器；否则设置页和弹窗里的按钮按空格无法激活。
+      const interactive = target?.closest(
+        "button, a, input, textarea, select, [role='switch'], [role='tab'], [contenteditable='true']",
+      );
+      const appState = useApp.getState();
 
       if ((event.ctrlKey || event.metaKey) && ["k", "f"].includes(event.key.toLowerCase())) {
         event.preventDefault();
-        useApp.getState().setSearchOpen(true);
+        appState.setSearchOpen(true);
         return;
       }
       if (event.key === "Escape") {
-        useApp.getState().setSearchOpen(false);
+        if (appState.settingsOpen || appState.searchOpen) return; // 由弹窗自己处理
+        appState.setSearchOpen(false);
         return;
       }
-      if (typing) return;
+      if (typing || interactive) return;
+      if (appState.settingsOpen || appState.searchOpen) return;
 
-      const app = useApp.getState();
+      const app = appState;
       const player = usePlayer.getState();
 
       if (event.code === "Space") {
@@ -278,7 +301,7 @@ export default function App() {
 
       {showLogin ? (
         <div className="app__body">
-          <Rail />
+          <Rail minimal />
           <LoginView />
         </div>
       ) : (
@@ -288,7 +311,16 @@ export default function App() {
           {view === "voices" ? (
             <>
               <VoiceList />
-              {detailOpen ? <DetailPanel /> : null}
+              {detailOpen ? (
+                <>
+                  <div
+                    className="detail-backdrop"
+                    aria-hidden="true"
+                    onClick={() => setDetailOpen(false)}
+                  />
+                  <DetailPanel />
+                </>
+              ) : null}
             </>
           ) : view === "stats" ? (
             <StatsView />

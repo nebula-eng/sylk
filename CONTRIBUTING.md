@@ -17,7 +17,8 @@ npm install
 
 npm run setup      # 检查环境 → 装依赖 → 编译 → 打包 → 装到本机 + 建桌面快捷方式
 
-npm run app:rel        # 或者只编不打包，直接跑 src-tauri/target/release/sylk.exe
+npm run build          # 先构建前端，tauri 编译时会嵌入 dist
+npm run app:rel        # 只编不打包，产物 src-tauri/target/release/sylk.exe
 npm run app:dev        # 改前端时用，热更新
 
 npm run mock:prepare   # 可选：造一个假引擎，不装 QQ 也能跑通全链路
@@ -30,7 +31,11 @@ npm run mock:prepare   # 可选：造一个假引擎，不装 QQ 也能跑通全
 换成 `release-fast` 之类的名字会被当成开发模式，编出来的程序去连 `devUrl` 的 1420 端口。
 这个坑已经踩过一次，`Cargo.toml` 里有注释。
 
-要自动化（截图、e2e）时才开调试端口：`SYLK_CDP_PORT=9333 npm run app:open`。
+要自动化（截图、e2e）时才开调试端口：
+
+```powershell
+$env:SYLK_CDP_PORT = "9333"; npm run app:open
+```
 
 ## 代码地图
 
@@ -77,18 +82,26 @@ scripts/
 ```bash
 npm run typecheck
 npm run build
-cargo test --manifest-path src-tauri/Cargo.toml
-cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml --all-targets
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
 ```
 
-UI 改动请跑一遍全面走查，它会抓溢出、重叠、文字裁剪，并在 1440 / 1100 / 960 三个宽度下各验一次：
+UI 改动请跑一遍全面走查，它会抓溢出、重叠、文字裁剪，并在 1440 / 1100 / 960 三个宽度下各验一次。
+先启动 Vite 和一个带 CDP 的 Edge：
 
-```bash
+```powershell
 npm run dev
-# 另开一个终端
-"/path/to/msedge" --headless=new --remote-debugging-port=9222 --user-data-dir=/tmp/sylk-audit about:blank &
-CDP_PORT=9222 node scripts/review.mjs
+# 另开一个 PowerShell 窗口
+$edge = "$env:ProgramFiles(x86)\Microsoft\Edge\Application\msedge.exe"
+$profile = Join-Path $env:TEMP "sylk-review-edge"
+& $edge --headless=new --disable-gpu --remote-debugging-port=9222 `
+  "--user-data-dir=$profile" --window-size=1440,920 http://127.0.0.1:1420/
+
+CDP_PORT=9222 node scripts/review.mjs "$env:TEMP\sylk-review"
 ```
+
+`CDP_PORT=9222 node ...` 这种写法是给 Git Bash 的；PowerShell 用
+`$env:CDP_PORT = "9222"; node scripts/review.mjs "$env:TEMP\sylk-review"`。
 
 文档配图由 `npm run shots` 生成，别手改 `docs/screenshots/`。
 
@@ -97,7 +110,7 @@ CDP_PORT=9222 node scripts/review.mjs
 用一句话说清「改了什么、为什么」。不要写 "update" "fix bug" 这种。
 
 ```
-fix: 回溯时游标停滞导致重复拉同一页
+fix: 同步历史时游标停滞导致重复拉同一页
 feat: 导出档案里增加可离线打开的 HTML
 ```
 
@@ -106,7 +119,7 @@ feat: 导出档案里增加可离线打开的 HTML
 - Rust：`cargo fmt` 默认风格；函数超过 80 行就该拆。
 - TypeScript：2 空格，双引号，组件用函数式，避免 `any`。
 - CSS：只用 `styles/tokens.css` 里的变量取色，不写裸色值。
-- 文案：中文用全角标点，术语保持一致（会话 / 语音 / 转写 / 回溯）。
+- 文案：中文用全角标点，术语保持一致（会话 / 语音 / 转写 / 同步历史）。
 
 ## 不接受的改动
 

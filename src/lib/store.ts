@@ -21,6 +21,10 @@ export type View = "voices" | "stats" | "jobs";
 /** 时间范围筛选。前端只暴露粗粒度选项，具体时间戳在这里算。 */
 export type RangeKey = "all" | "today" | "week" | "month";
 
+// 搜索输入防抖 + 丢弃过期响应，避免中文输入法组字时每个按键都发查询。
+let keywordTimer: number | undefined;
+let voiceRequestSeq = 0;
+
 export function rangeBounds(key: RangeKey): { from: number | null; to: number | null } {
   if (key === "all") return { from: null, to: null };
   const start = new Date();
@@ -139,8 +143,7 @@ function systemTheme(): "light" | "dark" {
 export const useApp = create<AppState>((set, get) => ({
   booted: false,
   loading: false,
-  settings: null,
-  info: null,
+  settings: null,  info: null,
   connection: initialConnection,
   conversations: [],
   activeConversationId: null,
@@ -244,8 +247,15 @@ export const useApp = create<AppState>((set, get) => ({
     const conversations = await api.listConversations();
     set({ conversations });
     const active = get().activeConversationId;
+    if (!active && conversations.length > 0) {
+      // 刚登录或换账号后没有 active 会话：自动选中第一条，否则空态刷新看起来没反应。
+      await get().selectConversation(conversations[0].id);
+      return;
+    }
     if (active && !conversations.some((item) => item.id === active)) {
-      set({ activeConversationId: conversations[0]?.id ?? null, activeVoiceId: null });
+      const next = conversations[0]?.id ?? null;
+      set({ activeConversationId: next, activeVoiceId: null });
+      if (next) await get().refreshVoices();
     }
   },
 
@@ -264,6 +274,7 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   refreshVoices: async () => {
+    const request = ++voiceRequestSeq;
     const {
       activeConversationId,
       keyword,
@@ -284,6 +295,8 @@ export const useApp = create<AppState>((set, get) => ({
       to: bounds.to,
       limit: 500,
     });
+    // 快速输入时只保留最后一次请求的结果。
+    if (request !== voiceRequestSeq) return;
     set({ voices: page.items, total: page.total });
     const activeVoice = get().activeVoiceId;
     if (activeVoice && !page.items.some((item) => item.id === activeVoice)) {
@@ -293,7 +306,10 @@ export const useApp = create<AppState>((set, get) => ({
 
   setKeyword: (value) => {
     set({ keyword: value });
-    void get().refreshVoices();
+    window.clearTimeout(keywordTimer);
+    keywordTimer = window.setTimeout(() => {
+      void get().refreshVoices();
+    }, 250);
   },
 
   setFilter: (patch) => {
@@ -360,28 +376,54 @@ export const useApp = create<AppState>((set, get) => ({
   bulkDelete: async () => {
     const ids = [...get().selected];
     if (ids.length === 0) return;
+    const removed: number[] = [];
+    let firstError = "";
     for (const id of ids) {
-      await api.deleteVoice(id);
+      try {
+        await api.deleteVoice(id);
+        removed.push(id);
+      } catch (error) {
+        if (!firstError) firstError = error instanceof Error ? error.message : String(error);
+      }
     }
-    set({
-      voices: get().voices.filter((voice) => !ids.includes(voice.id)),
-      total: Math.max(0, get().total - ids.length),
-      selected: new Set<number>(),
-      selectMode: false,
-      activeVoiceId: ids.includes(get().activeVoiceId ?? -1) ? null : get().activeVoiceId,
-    });
-    await Promise.all([get().refreshConversations(), get().loadStats()]);
-    get().toast("success", `已删除 ${ids.length} 条语音`);
+    if (removed.length > 0) {
+      set({
+        voices: get().voices.filter((voice) => !removed.includes(voice.id)),
+        total: Math.max(0, get().total - removed.length),
+        selected: new Set<number>(),
+        selectMode: false,
+        activeVoiceId: removed.includes(get().activeVoiceId ?? -1) ? null : get().activeVoiceId,
+      });
+      await Promise.all([get().refreshConversations(), get().loadStats()]);
+    }
+    if (removed.length === ids.length) {
+      get().toast("success", `已删除 ${removed.length} 条语音`);
+    } else {
+      get().toast(
+        "error",
+        `已删除 ${removed.length} 条，${ids.length - removed.length} 条失败：${firstError || "未知原因"}`,
+      );
+    }
   },
 
   bulkTranscribe: async () => {
     const ids = [...get().selected];
     if (ids.length === 0) return;
-    try {
-      const count = await api.enqueueTranscribe(ids.length);
-      get().toast("info", count > 0 ? `${count} 条已加入转写队列` : "这些语音都已经转写过了");
-    } catch (error) {
-      get().toast("error", error instanceof Error ? error.message : String(error));
+    let queued = 0;
+    let firstError = "";
+    for (const id of ids) {
+      try {
+        await api.transcribeVoice(id);
+        queued += 1;
+      } catch (error) {
+        if (!firstError) firstError = error instanceof Error ? error.message : String(error);
+      }
+    }
+    if (queued > 0) {
+      get().toast("info", `已把 ${queued} 条所选语音加入转写队列`);
+    }
+    if (queued < ids.length) {
+      get().toast("error", `有 ${ids.length - queued} 条未加入队列：${firstError || "未知原因"}`);
     }
   },
 

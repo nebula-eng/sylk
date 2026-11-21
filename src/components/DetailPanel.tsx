@@ -99,7 +99,7 @@ function ConversationOverview({ conversationId }: { conversationId: number }) {
       </div>
 
       <div className="kv">
-        <span className="kv__k">归档语音</span>
+        <span className="kv__k">语音</span>
         <span className="kv__v">{conversation.voiceCount} 条</span>
         <span className="kv__k">总时长</span>
         <span className="kv__v">{formatDuration(conversation.totalMs)}</span>
@@ -174,8 +174,12 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
 
   const saveNote = async () => {
     if (note === voice.note) return;
-    await updateVoice(voice.id, { note });
-    toast("success", "备注已保存");
+    try {
+      await updateVoice(voice.id, { note });
+      toast("success", "备注已保存");
+    } catch (error) {
+      toast("error", `备注保存失败：${error instanceof Error ? error.message : String(error)}`);
+    }
   };
 
   const addTag = async () => {
@@ -213,7 +217,7 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
 
   const requeueTranscribe = async () => {
     try {
-      await api.enqueueTranscribe(1);
+      await api.transcribeVoice(voice.id);
       toast("info", "已加入转写队列");
     } catch (error) {
       toast("error", error instanceof Error ? error.message : String(error));
@@ -281,11 +285,13 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
               <IconButton label="复制文字" onClick={() => void copyTranscript()}>
                 <Copy size={14} />
               </IconButton>
-            ) : (
-              <IconButton label="重新转写" onClick={() => void requeueTranscribe()}>
-                <RotateCw size={14} />
-              </IconButton>
-            )}
+            ) : null}
+            <IconButton
+              label={voice.transcript ? "重新转写" : "加入转写队列"}
+              onClick={() => void requeueTranscribe()}
+            >
+              <RotateCw size={14} />
+            </IconButton>
           </span>
         </div>
         <div className={cn("transcript", !voice.transcript && "is-empty")}>

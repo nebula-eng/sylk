@@ -43,6 +43,7 @@ export interface Api {
   deleteVoice(id: number): Promise<void>;
   enqueueMissing(): Promise<number>;
   enqueueTranscribe(limit?: number): Promise<number>;
+  transcribeVoice(id: number): Promise<void>;
   listJobs(): Promise<Job[]>;
   retryJobs(): Promise<void>;
   clearJobs(): Promise<void>;
@@ -97,6 +98,7 @@ const tauriApi: Api = {
   deleteVoice: (id) => invoke("delete_voice", { id }),
   enqueueMissing: () => invoke("enqueue_missing"),
   enqueueTranscribe: (limit) => invoke("enqueue_transcribe", { limit }),
+  transcribeVoice: (id) => invoke("transcribe_voice", { id }),
   listJobs: () => invoke("list_jobs"),
   retryJobs: () => invoke("retry_jobs"),
   clearJobs: () => invoke("clear_jobs"),
