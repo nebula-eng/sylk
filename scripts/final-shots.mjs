@@ -192,7 +192,7 @@ await shot("07-settings-asr");
 /* 搜索 */
 await closeOverlay();
 await wait(300);
-await evaluate(`(() => { const b=document.querySelector('.icon-btn[aria-label="搜索"]'); if(b) b.click(); return !!b; })()`);
+await evaluate(`window.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true})); true`);
 await wait(400);
 await evaluate(`(() => {
   const input = document.querySelector('.palette__field input');

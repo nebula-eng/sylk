@@ -26,6 +26,7 @@ export default function App() {
   const engine = useApp((state) => state.engine);
   const detailOpen = useApp((state) => state.detailOpen);
   const settings = useApp((state) => state.settings);
+  const playerVoiceId = usePlayer((state) => state.voiceId);
   const bootstrap = useApp((state) => state.bootstrap);
   const setProgress = useApp((state) => state.setProgress);
   const refreshEngine = useApp((state) => state.refreshEngine);
@@ -106,7 +107,7 @@ export default function App() {
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
+      const target = event.target instanceof HTMLElement ? event.target : null;
       const typing =
         target &&
         (target.tagName === "INPUT" ||
@@ -330,7 +331,7 @@ export default function App() {
         </div>
       )}
 
-      {showLogin ? null : <PlayerBar />}
+      {showLogin || !playerVoiceId ? null : <PlayerBar />}
       <SearchPalette />
       <SettingsPanel />
       <Toasts />

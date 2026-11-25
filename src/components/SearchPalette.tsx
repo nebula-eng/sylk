@@ -103,8 +103,8 @@ export function SearchPalette() {
           <input
             ref={inputRef}
             value={keyword}
-            aria-label="搜索转写文本、发送者、会话名或标签"
-            placeholder="搜索转写文本、发送者、会话名、标签"
+            aria-label="搜索语音"
+            placeholder="搜索"
             onChange={(event) => setKeyword(event.target.value)}
             onKeyDown={onKeyDown}
           />
@@ -114,7 +114,7 @@ export function SearchPalette() {
         <div className="palette__results">
           {!keyword.trim() ? (
             <div className="form-hint" style={{ padding: "14px 12px" }}>
-              输入关键词开始搜索；Ctrl K 随时打开这里。
+              输入关键词
             </div>
           ) : error ? (
             <div className="form-hint" style={{ padding: "14px 12px" }}>
@@ -122,7 +122,7 @@ export function SearchPalette() {
             </div>
           ) : results.length === 0 ? (
             <div className="form-hint" style={{ padding: "14px 12px" }}>
-              {busy ? "搜索中" : `没有匹配 ${keyword.trim()} 的语音`}
+              {busy ? "搜索中" : "无结果"}
             </div>
           ) : (
             results.map((voice, index) => (
@@ -147,7 +147,7 @@ export function SearchPalette() {
                     </span>
                   </span>
                   <span className="palette-item__text">
-                    {voice.transcript || "无转写文本"}
+                    {voice.transcript || "未转写"}
                   </span>
                   <span style={{ fontSize: "var(--fs-xs)", color: "var(--text-3)" }}>
                     {formatDateTime(voice.sentAt)}

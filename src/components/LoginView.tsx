@@ -26,15 +26,15 @@ const STEPS = [
 ];
 
 const HEADLINE: Record<string, string> = {
-  unavailable: "先准备一下",
+  unavailable: "接入引擎",
   preparing: "正在准备",
   starting: "正在启动",
-  awaiting_scan: "用手机 QQ 扫码",
-  scanned: "在手机上确认",
-  online: "登录好了",
-  stopped: "引擎已停止",
-  error: "引擎启动失败",
-  idle: "准备启动",
+  awaiting_scan: "扫码登录",
+  scanned: "请在手机上确认",
+  online: "登录成功",
+  stopped: "引擎未启动",
+  error: "无法启动引擎",
+  idle: "准备中",
 };
 
 function stepState(phase: EnginePhase, index: number): "done" | "active" | "todo" | "error" {
@@ -198,7 +198,7 @@ export function LoginView() {
 
   return (
     <div className="login">
-      <div className="login__card">
+      <div className={cn("login__card", (preparing || (!needsPrepare && (phase === "error" || phase === "stopped"))) && "is-status")}>
         {/* 左：叙事与步骤 */}
         <div className="login__aside">
           <div className="login__brand">
@@ -214,10 +214,10 @@ export function LoginView() {
           <h1 className="login__h">{HEADLINE[phase] ?? "准备启动"}</h1>
           <p className="login__p">
             {needsPrepare
-              ? "Sylk 需要本机的 QQ 客户端与一个兼容引擎。可自动查找本机已有引擎，或指定目录、导入引擎包。"
+              ? "选择一个已有引擎。"
               : external
-                ? "当前使用外部 NapCat。在设置中填写地址与令牌后，这里会显示二维码。"
-                : "使用你自己的账号登录。二维码显示在右侧，扫码确认后进入主界面。"}
+                ? "连接外部 NapCat 后展示二维码。"
+                : "打开手机 QQ 扫一扫。"}
           </p>
 
           <ol className="login__steps">
@@ -256,17 +256,17 @@ export function LoginView() {
         {/* 右：二维码 */}
         <div className="login__stage">
           {needsPrepare ? (
-            <div className="login__prepare">
+            <div className="login__prepare is-compact">
               <div className="login__prepare-icon">
                 <QrCode size={30} strokeWidth={1.6} />
               </div>
               <div className="login__prepare-title">
-                {engine?.detail?.startsWith("自动获取失败") ? "无法自动获取引擎" : "尚未配置引擎"}
+                {engine?.detail?.startsWith("自动获取失败") ? "无法在线下载" : "尚未配置引擎"}
               </div>
               <div className="login__prepare-text">
                 {engine?.detail?.startsWith("自动获取失败")
-                  ? "内置下载地址由上游提供，当前不可用。可以用下面任一方式接入已有引擎。"
-                  : "先自动查找本机引擎，或用指定目录、导入引擎包的方式接入。兼容引擎包与 NapCat 目录都支持。"}
+                  ? "下载源暂不可用，请使用本地引擎。"
+                  : "选择本机已有的引擎目录或安装包。"}
               </div>
               {engine?.detail?.startsWith("自动获取失败") ? (
                 <div className="login__prepare-hint login__prepare-hint--error">
@@ -274,23 +274,19 @@ export function LoginView() {
                 </div>
               ) : null}
               <Button variant="primary" onClick={() => void scanLocal()} disabled={busy}>
-                自动查找本机引擎
+                自动查找引擎
               </Button>
               <div className="login__prepare-alt">
                 <button type="button" onClick={() => void pickDir()}>
-                  指定引擎目录
+                  指定目录
                 </button>
                 <span>·</span>
                 <button type="button" onClick={() => void pickArchive()}>
-                  导入引擎包
-                </button>
-                <span>·</span>
-                <button type="button" onClick={() => void runPrepare()} disabled={busy}>
-                  在线下载
+                  导入 zip
                 </button>
                 <span>·</span>
                 <button type="button" onClick={() => void switchToExternal()}>
-                  使用外部 NapCat
+                  外部 NapCat
                 </button>
               </div>
             </div>
@@ -306,9 +302,6 @@ export function LoginView() {
                   style={{ width: `${prepareProgress?.percent ?? 6}%` }}
                 />
               </div>
-              <div className="login__prepare-text">
-                {prepareProgress?.detail ?? "正在获取文件"}
-              </div>
             </div>
           ) : phase === "error" || phase === "stopped" ? (
             <div className="login__prepare">
@@ -320,7 +313,7 @@ export function LoginView() {
                 )}
               </div>
               <div className="login__prepare-title">
-                {phase === "stopped" ? "引擎已停止" : "引擎启动失败"}
+                {phase === "stopped" ? "引擎未启动" : "启动失败"}
               </div>
               <div className="login__prepare-text">{engine?.detail}</div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -335,7 +328,7 @@ export function LoginView() {
               </div>
               {!engine?.qqFound ? (
                 <div className="login__prepare-hint">
-                  未检测到 QQ NT。引擎依赖本机安装的 QQ，请先安装
+                  未检测到 QQ，
                   <button
                     type="button"
                     className="login__link"
@@ -345,9 +338,8 @@ export function LoginView() {
                         .catch(() => toast("info", "https://im.qq.com/"));
                     }}
                   >
-                    im.qq.com
+                    前往下载
                   </button>
-                  后重试。
                 </div>
               ) : null}
             </div>

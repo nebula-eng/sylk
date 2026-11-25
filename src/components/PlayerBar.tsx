@@ -233,16 +233,9 @@ export function PlayerBar() {
       ) : (
         <div className="player__idle">
           <Mic size={15} />
-          <span>选择一条语音开始播放</span>
+          <span>选择一条语音</span>
           <span className="shortcut-hint" style={{ marginLeft: 10 }}>
-            <span className="kbd">空格</span> 暂停
-            <span className="kbd" style={{ marginLeft: 6 }}>
-              ← →
-            </span>
-            换上下条
-          </span>
-          <span className="badge" style={{ marginLeft: "auto" }}>
-            当前列表 {voices.length} 条
+            <span className="kbd">空格</span> 播放暂停
           </span>
         </div>
       )}

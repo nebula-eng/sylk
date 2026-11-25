@@ -29,8 +29,8 @@ import { Waveform } from "@/components/Waveform";
 const RANGES: { key: RangeKey; label: string }[] = [
   { key: "all", label: "全部" },
   { key: "today", label: "今天" },
-  { key: "week", label: "近 7 天" },
-  { key: "month", label: "近 30 天" },
+  { key: "week", label: "7 天" },
+  { key: "month", label: "30 天" },
 ];
 
 export function VoiceList() {
@@ -58,7 +58,6 @@ export function VoiceList() {
   const selectVoice = useApp((state) => state.selectVoice);
   const activeVoiceId = useApp((state) => state.activeVoiceId);
   const syncHistory = useApp((state) => state.syncHistory);
-  const refreshConversations = useApp((state) => state.refreshConversations);
   const connection = useApp((state) => state.connection);
   const toast = useApp((state) => state.toast);
   const activity = useApp((state) => state.progress);
@@ -143,17 +142,8 @@ export function VoiceList() {
       <div className="main">
         <div className="empty">
           <EmptyArt />
-          <div className="empty__title">未选择会话</div>
-          <div className="empty__text">从左侧选择一个群聊或好友。</div>
-          <div className="empty__actions">
-            <Button
-              variant="primary"
-              icon={<RefreshCw size={14} />}
-              onClick={() => void refreshConversations()}
-            >
-              刷新列表
-            </Button>
-          </div>
+          <div className="empty__title">选择一个会话</div>
+          <div className="empty__text">在左侧选择一个群聊或好友。</div>
         </div>
       </div>
     );
@@ -180,19 +170,16 @@ export function VoiceList() {
                 {conversation.kind === "group" ? "群聊" : "好友"}
               </Badge>
             ) : null}
-            {!crossConversation && conversation && conversation.voiceCount === 0 ? (
-              <Badge kind="warn">未归档</Badge>
-            ) : null}
           </div>
           <div className="main__sub">
             {crossConversation
-              ? `${total} 条 · 来自 ${new Set(voices.map((v) => v.conversationId)).size} 个会话`
+              ? `${total} 条 · ${new Set(voices.map((v) => v.conversationId)).size} 个会话`
               : conversation
                 ? `${conversation.voiceCount} 条 · ${formatDuration(conversation.totalMs)}${
                     conversation.kind === "group" && conversation.memberCount > 0
                       ? ` · ${conversation.memberCount} 人`
                       : ""
-                  }${conversation.lastVoiceAt ? ` · 最近一条 ${formatTime(conversation.lastVoiceAt)}` : ""}`
+                  }`
                 : ""}
           </div>
         </div>
@@ -205,9 +192,9 @@ export function VoiceList() {
                 icon={<History size={13.5} className={syncing ? "spin" : undefined} />}
                 disabled={!online || syncing}
                 onClick={() => void runSync()}
-                title="拉取该会话的历史消息并保存其中的语音"
+                title="同步这个会话的历史语音"
               >
-                {syncing ? "同步中" : "同步历史"}
+                {syncing ? "同步中" : "同步"}
               </Button>
               <Button
                 variant="ghost"
@@ -215,7 +202,7 @@ export function VoiceList() {
                 icon={<FolderDown size={13.5} />}
                 disabled={(conversation?.voiceCount ?? 0) === 0 || exporting}
                 onClick={() => void exportBundle()}
-                title="音频、文字稿、CSV 和可离线打开的 HTML"
+                title="导出音频、文字稿与 HTML"
               >
                 {exporting ? "导出中" : "导出"}
               </Button>
@@ -243,7 +230,7 @@ export function VoiceList() {
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
-            placeholder="搜索转写文本、发送者、标签"
+            placeholder="搜索"
             aria-label="搜索语音"
           />
           {keyword ? (
@@ -320,7 +307,7 @@ export function VoiceList() {
         <div className="filter-bar">
           {senderFilter ? (
             <span className="filter-tag">
-              发送者：{senderName}
+              {senderName}
               <button
                 type="button"
                 aria-label="清除发送者筛选"
@@ -331,28 +318,22 @@ export function VoiceList() {
             </span>
           ) : null}
           <span className="filter-bar__count">
-            {voices.length === total ? `共 ${total} 条` : `${voices.length} / ${total} 条`}
+            {voices.length === total ? `${total} 条` : `${voices.length} / ${total} 条`}
           </span>
           <button type="button" className="filter-bar__reset" onClick={() => resetFilters()}>
             清除筛选
           </button>
         </div>
-      ) : (
-        <div className="filter-bar filter-bar--plain">
-          <span className="filter-bar__count">
-            共 {total} 条{total >= 500 ? "（仅显示最近 500 条）" : ""}
-          </span>
-        </div>
-      )}
+      ) : null}
 
       {selectMode ? (
         <div className="bulk-bar">
-          <span className="bulk-bar__count">已选 {selected.size} 项</span>
+          <span className="bulk-bar__count">已选 {selected.size} 条</span>
           <Button size="sm" variant="ghost" onClick={() => selectAllVisible()}>
-            全选结果
+            全选
           </Button>
           <Button size="sm" variant="ghost" onClick={() => clearSelected()}>
-            取消选择
+            取消
           </Button>
           <span className="bulk-bar__grow" />
           <Button
@@ -371,7 +352,7 @@ export function VoiceList() {
             disabled={selected.size === 0}
             onClick={() => void bulkTranscribe()}
           >
-            转写所选
+            转写
           </Button>
           <Button
             size="sm"
@@ -394,32 +375,22 @@ export function VoiceList() {
       {voices.length === 0 ? (
         <div className="empty">
           <EmptyArt />
-          <div className="empty__title">{filtered ? "没有符合条件的语音" : "尚未保存语音"}</div>
-          <div className="empty__text">
-            {filtered
-              ? "调整关键词、时间范围或筛选条件后重试。"
-              : online
-                ? "同步历史会拉取该会话的消息并保存语音；之后收到的语音会自动入库。"
-                : "引擎未登录。请先在登录页扫码。"}
-          </div>
+          <div className="empty__title">{filtered ? "没有匹配结果" : "还没有语音"}</div>
           {!filtered ? (
-            <div className="empty__actions">
-              <Button
-                variant="primary"
-                icon={<History size={14} className={syncing ? "spin" : undefined} />}
-                disabled={!online || syncing}
-                onClick={() => void runSync()}
-              >
-                {syncing ? "同步中" : "同步历史"}
-              </Button>
-            </div>
-          ) : (
-            <div className="empty__actions">
-              <Button variant="ghost" onClick={() => resetFilters()}>
-                清除筛选
-              </Button>
-            </div>
-          )}
+            <>
+              <div className="empty__text">{online ? "同步这个会话开始收集。" : "引擎未连接。"}</div>
+              <div className="empty__actions">
+                <Button
+                  variant="primary"
+                  icon={<History size={14} className={syncing ? "spin" : undefined} />}
+                  disabled={!online || syncing}
+                  onClick={() => void runSync()}
+                >
+                  {syncing ? "同步中" : "同步"}
+                </Button>
+              </div>
+            </>
+          ) : null}
         </div>
       ) : (
         <div className="voice-list" role="listbox" aria-label="语音列表">
@@ -428,7 +399,6 @@ export function VoiceList() {
               <div className="day-head">
                 {group.label}
                 <span className="day-head__line" />
-                <span className="tabular">{group.items.length} 条</span>
               </div>
               {group.items.map((voice) => (
                 <VoiceRow
@@ -483,7 +453,7 @@ function VoiceRow({
       ? "正在转写…"
       : voice.transcriptStatus === "failed"
         ? `转写失败：${voice.transcriptError || "原因不明"}`
-        : voice.transcript || "无转写文本";
+        : voice.transcript || "";
 
   return (
     <article
@@ -521,7 +491,7 @@ function VoiceRow({
         <div className="voice-row__top">
           <span className="voice-row__name">{voice.senderName || "未知发送者"}</span>
           <span className="voice-row__time">{formatTime(voice.sentAt)}</span>
-          {voice.tags.slice(0, 2).map((tag) => (
+          {voice.tags.slice(0, 1).map((tag) => (
             <span className="tag" key={tag}>
               {tag}
             </span>
@@ -540,7 +510,9 @@ function VoiceRow({
           />
         </div>
 
-        <div className={cn("voice-row__text", !voice.transcript && "is-empty")}>{transcriptLine}</div>
+        {transcriptLine ? (
+          <div className={cn("voice-row__text", !voice.transcript && "is-empty")}>{transcriptLine}</div>
+        ) : null}
       </div>
 
       <div className="voice-row__side">

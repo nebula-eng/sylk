@@ -1,4 +1,4 @@
-import { Download, RefreshCw, RotateCw, FileText, AlertTriangle } from "lucide-react";
+import { Download, RotateCw, FileText, AlertTriangle } from "lucide-react";
 
 import { api } from "@/lib/api";
 import { formatRelative } from "@/lib/format";
@@ -17,7 +17,6 @@ export function JobsView() {
   const loadJobs = useApp((state) => state.loadJobs);
   const toast = useApp((state) => state.toast);
 
-  const pending = jobs.filter((job) => job.status === "pending").length;
   const running = jobs.filter((job) => job.status === "running").length;
   const failed = jobs.filter((job) => job.status === "failed").length;
 
@@ -47,13 +46,10 @@ export function JobsView() {
         <div className="main__titles">
           <div className="main__title">任务</div>
           <div className="main__sub">
-            共 {jobs.length} 项 · 等待 {pending} · 进行中 {running} · 失败 {failed}
+            {failed > 0 ? `${failed} 个失败` : running > 0 ? `${running} 个进行中` : `${jobs.length} 项`}
           </div>
         </div>
         <div className="main__actions">
-          <Button variant="ghost" size="sm" icon={<RefreshCw size={13} />} onClick={() => void loadJobs()}>
-            刷新
-          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -69,7 +65,7 @@ export function JobsView() {
             disabled={failed === 0}
             onClick={() => void retry()}
           >
-            重试失败
+            重试
           </Button>
         </div>
       </header>
@@ -78,7 +74,6 @@ export function JobsView() {
         {jobs.length === 0 ? (
           <div className="empty">
             <div className="empty__title">暂无任务</div>
-            <div className="empty__text">下载与转写任务会显示在这里；失败任务可以重试，原因会写在任务下方。</div>
           </div>
         ) : (
           jobs.map((job) => (
@@ -90,10 +85,9 @@ export function JobsView() {
                 <div className="job-row__title">
                   {job.kind === "download" ? "下载语音" : "转写语音"}
                   {job.title ? ` · ${job.title}` : ""}
-                  <span style={{ color: "var(--text-3)", fontWeight: 400 }}> #{job.refId}</span>
                 </div>
                 <div className="job-row__sub">
-                  {formatRelative(job.createdAt)}创建
+                  {formatRelative(job.createdAt)}
                   {job.attempts > 0 ? ` · 重试 ${job.attempts} 次` : ""}
                 </div>
                 {job.lastError ? (

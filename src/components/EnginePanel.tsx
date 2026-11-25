@@ -104,9 +104,9 @@ export function EnginePanel({
               <span className={cn("engine-pill", `is-${tone}`)}>{PHASE_LABEL[phase]}</span>
             </div>
             <div className="engine-card__sub">
-              {engine?.detail || "未启动"}
-              {engine?.pid ? ` · PID ${engine.pid}` : ""}
-              {engine?.uptime ? ` · 已运行 ${formatDuration(engine.uptime * 1000)}` : ""}
+              {engine?.account?.nickname
+                ? `${engine.account.nickname}${engine.uptime ? ` · ${formatDuration(engine.uptime * 1000)}` : ""}`
+                : engine?.detail || "未启动"}
             </div>
           </div>
           {tone === "busy" ? <Loader2 size={16} className="spin" color="var(--accent)" /> : null}
@@ -143,7 +143,7 @@ export function EnginePanel({
                 disabled={busy}
                 onClick={() => void run(logoutEngine, "已退出登录")}
               >
-                退出登录
+                退出
               </Button>
             </>
           ) : phase === "unavailable" ? (
@@ -165,7 +165,7 @@ export function EnginePanel({
                 disabled={busy}
                 onClick={() => void run(restartEngine, "引擎已重启")}
               >
-                重启引擎
+                重启
               </Button>
               <Button
                 variant="ghost"
@@ -188,7 +188,7 @@ export function EnginePanel({
               }, "已打开引擎目录")
             }
           >
-            打开目录
+            目录
           </Button>
           <button
             type="button"
@@ -196,7 +196,7 @@ export function EnginePanel({
             style={{ marginLeft: "auto" }}
             onClick={() => setShowLogs(!showLogs)}
           >
-            {showLogs ? "收起日志" : "查看日志"}
+            {showLogs ? "收起" : "日志"}
           </button>
         </div>
 

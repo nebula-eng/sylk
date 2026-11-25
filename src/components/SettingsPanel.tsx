@@ -177,13 +177,8 @@ export function SettingsPanel() {
                 <div className="step-card">
                   <div className="step-card__title">
                     <Plug size={13} />
-                    连接已有 NapCat
+                    NapCat
                   </div>
-                  <div className="step-card__text">
-                    Sylk 通过 NapCat 读取账号，不直接连接腾讯服务器。在 NapCat 的 WebUI 中启用
-                    HTTP 与 WebSocket 服务，然后把地址填到下面。
-                  </div>
-                  <div className="code-line">WebUI 127.0.0.1:6099 · HTTP 3000 · WebSocket 3001</div>
                   <button
                     type="button"
                     className="link-btn"
@@ -195,7 +190,7 @@ export function SettingsPanel() {
                     }}
                   >
                     <FolderOpen size={12} />
-                    打开 NapCat 项目页
+                    项目页
                   </button>
                 </div>
 
@@ -685,8 +680,8 @@ export function SettingsPanel() {
                   </div>
                   <div>
                     <div style={{ fontSize: "var(--fs-md)", fontWeight: 600 }}>Sylk · 声匣</div>
-                    <div className="form-hint" style={{ marginTop: 0 }}>
-                      版本 {info?.version ?? "0.1.0"} · {info?.platform ?? "unknown"}
+                    <div className="settings__version">
+                      版本 {info?.version ?? "—"} · {info?.platform ?? "—"}
                     </div>
                   </div>
                 </div>

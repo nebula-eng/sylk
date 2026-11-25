@@ -38,62 +38,38 @@ export function StatsView() {
   if (!stats || stats.overview.voices === 0) {
     return (
       <div className="main">
-        <PageHead title="统计" subtitle="已保存语音的汇总视图" onRefresh={() => void loadStats()} />
+        <PageHead title="统计" subtitle="还没有语音" onRefresh={() => void loadStats()} />
         <div className="empty">
-          <div className="empty__title">暂无数据</div>
-          <div className="empty__text">接入账号并同步历史后，这里会显示统计。</div>
+          <div className="empty__title">还没有语音</div>
+          <div className="empty__text">同步后这里会显示统计。</div>
         </div>
       </div>
     );
   }
 
   const { overview } = stats;
-  const transcribedRate = percent(overview.transcribed, overview.voices);
 
   return (
     <div className="main">
       <PageHead
         title="统计"
-        subtitle={`${overview.conversations} 个会话 · ${overview.voices} 条语音 · 累计 ${formatDuration(overview.totalMs)}`}
+        subtitle={`${overview.conversations} 个会话 · ${overview.voices} 条 · ${formatDuration(overview.totalMs)}`}
         onRefresh={() => void loadStats()}
       />
 
       <div className="stats-view">
         <div className="stat-grid">
-          <StatCard
-            icon={<Mic size={13} />}
-            label="语音总数"
-            value={overview.voices}
-            unit="条"
-            foot={`今天新增 ${overview.today} 条`}
-          />
-          <StatCard
-            icon={<Clock3 size={13} />}
-            label="累计时长"
-            value={formatDuration(overview.totalMs)}
-            foot={`平均每条 ${formatDuration(Math.round(overview.totalMs / Math.max(1, overview.voices)))}`}
-          />
-          <StatCard
-            icon={<FileText size={13} />}
-            label="已转写"
-            value={overview.transcribed}
-            unit="条"
-            foot={`覆盖率 ${transcribedRate}%`}
-          />
-          <StatCard
-            icon={<HardDrive size={13} />}
-            label="本地占用"
-            value={formatBytes(overview.storageBytes)}
-            foot={`星标 ${overview.starred} 条 · 待处理 ${overview.pendingJobs} 项`}
-          />
+          <StatCard icon={<Mic size={13} />} label="语音" value={overview.voices} unit="条" />
+          <StatCard icon={<Clock3 size={13} />} label="时长" value={formatDuration(overview.totalMs)} />
+          <StatCard icon={<FileText size={13} />} label="已转写" value={overview.transcribed} unit="条" />
+          <StatCard icon={<HardDrive size={13} />} label="占用" value={formatBytes(overview.storageBytes)} />
         </div>
 
         <div className="stat-cols">
           <div className="panel" style={{ marginTop: 14 }}>
             <div className="panel__head">
               <Users size={13} color="var(--text-3)" />
-              <span className="panel__title">会话时长排行</span>
-              <span className="panel__hint">点击进入会话</span>
+              <span className="panel__title">会话排行</span>
             </div>
             <div className="bar-list">
               {stats.topConversations.map((item) => {
@@ -127,8 +103,7 @@ export function StatsView() {
           <div className="panel" style={{ marginTop: 14 }}>
             <div className="panel__head">
               <Users size={13} color="var(--text-3)" />
-              <span className="panel__title">发送者排行</span>
-              <span className="panel__hint">按累计时长排序</span>
+              <span className="panel__title">发送者</span>
             </div>
             <div>
               {stats.topSenders.map((sender, index) => (
@@ -168,8 +143,7 @@ export function StatsView() {
         <div className="panel">
           <div className="panel__head">
             <Flame size={13} color="var(--text-3)" />
-            <span className="panel__title">活跃时段分布</span>
-            <span className="panel__hint">颜色越深表示条数越多</span>
+            <span className="panel__title">活跃时段</span>
           </div>
           <div className="heatmap">
             <div className="heatmap__labels">
@@ -212,8 +186,7 @@ export function StatsView() {
         <div className="panel">
           <div className="panel__head">
             <Clock3 size={13} color="var(--text-3)" />
-            <span className="panel__title">近 30 天趋势</span>
-            <span className="panel__hint">每日新增条数</span>
+            <span className="panel__title">近 30 天</span>
           </div>
           <div className="spark" role="img" aria-label="最近 30 天每日语音条数">
             {stats.daily.map((item) => (
@@ -264,13 +237,11 @@ function StatCard({
   label,
   value,
   unit,
-  foot,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   unit?: string;
-  foot: string;
 }) {
   return (
     <div className="stat-card">
@@ -282,7 +253,6 @@ function StatCard({
         {value}
         {unit ? <small>{unit}</small> : null}
       </div>
-      <div className="stat-card__foot">{foot}</div>
     </div>
   );
 }

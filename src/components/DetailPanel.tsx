@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
-import { formatBytes, formatClock, formatDateTime, formatDuration } from "@/lib/format";
+import { formatClock, formatDateTime, formatDuration } from "@/lib/format";
 import { usePlayer } from "@/lib/player";
 import { useApp } from "@/lib/store";
 import { Avatar, Button, IconButton, cn } from "@/components/ui/primitives";
@@ -34,7 +34,7 @@ export function DetailPanel() {
   return (
     <aside className="detail" aria-label="语音详情">
       <div className="detail__head">
-        <div className="detail__title">{voice ? "语音详情" : "会话概览"}</div>
+        <div className="detail__title">{voice ? "语音" : "概览"}</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 2 }}>
           {voice ? (
             <IconButton label="返回概览" onClick={() => selectVoice(null)}>
@@ -101,31 +101,30 @@ function ConversationOverview({ conversationId }: { conversationId: number }) {
       <div className="kv">
         <span className="kv__k">语音</span>
         <span className="kv__v">{conversation.voiceCount} 条</span>
-        <span className="kv__k">总时长</span>
+        <span className="kv__k">时长</span>
         <span className="kv__v">{formatDuration(conversation.totalMs)}</span>
-        <span className="kv__k">群成员</span>
-        <span className="kv__v">{conversation.kind === "group" ? `${conversation.memberCount} 人` : "—"}</span>
-        <span className="kv__k">上次同步</span>
+        {conversation.kind === "group" ? (
+          <>
+            <span className="kv__k">成员</span>
+            <span className="kv__v">{conversation.memberCount} 人</span>
+          </>
+        ) : null}
+        <span className="kv__k">同步</span>
         <span className="kv__v">
           {conversation.syncedAt ? formatDateTime(conversation.syncedAt) : "尚未同步"}
         </span>
       </div>
 
-      <div className="section">
-        <div className="section__head">
-          <span className="section__title">操作</span>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<FolderDown size={13.5} />}
-            disabled={conversation.voiceCount === 0}
-            onClick={() => void exportBundle()}
-          >
-            导出整个会话
-          </Button>
-        </div>
+      <div style={{ marginTop: 18 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<FolderDown size={13.5} />}
+          disabled={conversation.voiceCount === 0}
+          onClick={() => void exportBundle()}
+        >
+          导出整个会话
+        </Button>
       </div>
 
     </div>
@@ -300,11 +299,8 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
               ? `转写失败：${voice.transcriptError || "未知原因"}`
               : voice.transcriptStatus === "running"
                 ? "正在转写…"
-                : "尚无转写文本。启用转写后可重新处理。")}
+                : "未转写")}
         </div>
-        {voice.asrEngine && voice.transcript ? (
-          <div className="form-hint">由 {voice.asrEngine} 转写</div>
-        ) : null}
       </div>
 
       <div className="section">
@@ -352,29 +348,6 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
           onChange={(event) => setNote(event.target.value)}
           onBlur={() => void saveNote()}
         />
-      </div>
-
-      <div className="section">
-        <div className="section__head">
-          <span className="section__title">文件信息</span>
-        </div>
-        <div className="kv">
-          <span className="kv__k">时长</span>
-          <span className="kv__v">{formatDuration(voice.durationMs)}</span>
-          <span className="kv__k">大小</span>
-          <span className="kv__v">{formatBytes(voice.sizeBytes)}</span>
-          <span className="kv__k">格式</span>
-          <span className="kv__v">
-            {voice.codec.toUpperCase()}
-            {voice.sampleRate ? ` · ${(voice.sampleRate / 1000).toFixed(1)} kHz` : ""}
-          </span>
-          <span className="kv__k">来源</span>
-          <span className="kv__v">{voice.source === "live" ? "实时接收" : voice.source === "history" ? "历史同步" : "手动导入"}</span>
-          <span className="kv__k">消息 ID</span>
-          <span className="kv__v mono kv__v--mono">
-            {voice.msgId}
-          </span>
-        </div>
       </div>
 
       <div className="section" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

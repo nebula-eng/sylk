@@ -194,7 +194,7 @@ export function Modal({
         ) ?? []),
       ].filter((element) => element.offsetParent !== null);
     requestAnimationFrame(() => {
-      focusables()[0]?.focus();
+      overlay?.focus();
     });
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") {

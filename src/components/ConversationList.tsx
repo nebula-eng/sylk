@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Users, User, Command } from "lucide-react";
+import { Search, Users, User } from "lucide-react";
 
 import { useApp } from "@/lib/store";
 import { formatDuration, formatRelative } from "@/lib/format";
@@ -41,18 +41,18 @@ export function ConversationList() {
           <div style={{ minWidth: 0 }}>
             <div className="conv-pane__name">{account?.nickname ?? "未连接账号"}</div>
             <div className="conv-pane__sub">
-              {account ? `${account.uin} · ${conversations.length} 个会话` : "未登录"}
+              {account ? `${conversations.length} 个会话` : "未登录"}
             </div>
           </div>
         </div>
         <button
           type="button"
           className="icon-btn"
-          title="搜索（Ctrl K）"
-          aria-label="搜索"
+          title="全局搜索（Ctrl K）"
+          aria-label="全局搜索"
           onClick={() => setSearchOpen(true)}
         >
-          <Command size={15} />
+          <Search size={15} />
         </button>
       </div>
 
@@ -62,16 +62,16 @@ export function ConversationList() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="筛选会话"
-            aria-label="筛选会话"
+            placeholder="搜索会话"
+            aria-label="搜索会话"
           />
         </div>
       </div>
 
       <div className="conv-pane__scroll">
         {conversations.length === 0 ? (
-          <div className="form-hint" style={{ padding: "18px 10px", lineHeight: 1.8 }}>
-            暂无会话。登录后群聊与好友会显示在这里。
+          <div className="form-hint" style={{ padding: "18px 10px" }}>
+            暂无会话
           </div>
         ) : null}
 
@@ -113,7 +113,7 @@ export function ConversationList() {
 
         {conversations.length > 0 && filtered.length === 0 ? (
           <div className="form-hint" style={{ padding: "18px 10px" }}>
-            没有匹配 {query} 的会话
+            没有匹配的会话
           </div>
         ) : null}
       </div>
@@ -135,8 +135,8 @@ function ConversationItem({
     item.voiceCount > 0
       ? `${item.voiceCount} 条 · ${formatDuration(item.totalMs)}`
       : item.kind === "group"
-        ? `${item.memberCount || 0} 人 · 无语音`
-        : "无语音";
+        ? `${item.memberCount || 0} 人`
+        : "";
 
   return (
     <button
@@ -148,9 +148,11 @@ function ConversationItem({
       <Avatar name={name} src={item.avatar} />
       <div className="conv-item__body">
         <div className="conv-item__name">{name}</div>
-        <div className="conv-item__meta">
-          <span>{sub}</span>
-        </div>
+        {sub ? (
+          <div className="conv-item__meta">
+            <span>{sub}</span>
+          </div>
+        ) : null}
       </div>
       <span className="conv-item__count">
         {item.lastVoiceAt ? formatRelative(item.lastVoiceAt) : ""}
