@@ -1,157 +1,110 @@
-<div align="center">
+﻿<div align="center">
 
-<img src="docs/screenshots/02-main-light.png" width="920" alt="Sylk 主界面：左侧会话、中间语音列表、右侧会话概览" />
+<img src="docs/screenshots/02-main-light.png" width="920" alt="Sylk 涓荤晫闈細宸︿晶浼氳瘽銆佷腑闂磋闊冲垪琛ㄣ€佸彸渚т細璇濇瑙? />
 
-# Sylk · 声匣
+# Sylk 路 澹板專
 
-把 QQ 群聊与私聊里的语音存到本地，转成文字，能搜、能整理、能导出。
-
+鎶?QQ 缇よ亰涓庣鑱婇噷鐨勮闊冲瓨鍒版湰鍦帮紝杞垚鏂囧瓧锛岃兘鎼溿€佽兘鏁寸悊銆佽兘瀵煎嚭銆?
 [![Release](https://img.shields.io/github/v/release/nebula-eng/sylk?color=3e63dd)](https://github.com/nebula-eng/sylk/releases/latest)
 [![CI](https://github.com/nebula-eng/sylk/actions/workflows/ci.yml/badge.svg)](https://github.com/nebula-eng/sylk/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3e63dd.svg)](LICENSE)
 [![Tauri](https://img.shields.io/badge/Tauri-2-24c8db.svg)](https://tauri.app)
 
-**[下载 Windows 安装包](https://github.com/nebula-eng/sylk/releases/latest)** ·
-[5 分钟快速开始](docs/quickstart.md) ·
-Windows 10 2004+ / Windows 11 · x64 · 约 3 MB · 当前用户安装，不需要管理员权限
+**[涓嬭浇 Windows 瀹夎鍖匽(https://github.com/nebula-eng/sylk/releases/latest)** 路
+[5 鍒嗛挓蹇€熷紑濮媇(docs/quickstart.md) 路
+Windows 10 2004+ / Windows 11 路 x64 路 绾?3 MB 路 褰撳墠鐢ㄦ埛瀹夎锛屼笉闇€瑕佺鐞嗗憳鏉冮檺
 
 </div>
 
-## 它解决什么问题
+## 瀹冭В鍐充粈涔堥棶棰?
+QQ 鐨勮闊冲彧鑳藉湪绾垮惉銆傛崲鍙拌澶囥€佹竻涓€娆＄紦瀛樸€佽繃涓€闃靛瓙锛岄偅鏉¤闊冲氨娌′簡銆傜兢閲屾湁浜虹敤璇煶浜や唬浜嗕竴浠朵簨锛岀瓑浣犳兂鎵撅紝鍙墿涓€琛屻€孾璇煶]銆嶃€?
+Sylk 鎶婁綘鑳藉惉鍒扮殑璇煶瀛樻垚鏂囦欢銆傜櫥褰曠敤浣犺嚜宸辩殑璐﹀彿锛岃兘璇诲埌鐨勮寖鍥村拰鎵嬫満 QQ 涓婄湅鍒扮殑涓€鏍枫€?
+## 涓夋寮€濮?
+1. **瀹夎 Sylk**锛氫笅杞戒笂闈㈢殑瀹夎鍖咃紝鍙屽嚮瀹夎銆傚畨瑁呭寘娌℃湁绛惧悕锛學indows 鍙兘鎻愮ず銆屾湭鐭ュ彂甯冭€呫€嶏紝鐐广€屾洿澶氫俊鎭?鈫?浠嶈杩愯銆嶃€?2. **鍑嗗涓€涓紩鎿?*锛歋ylk 涓嶅唴缃涓夋柟寮曟搸銆傚鏋滀綘宸茬粡鏈夊吋瀹瑰紩鎿庡寘鎴?NapCat 鐩綍锛屾墦寮€ Sylk 鍚庣偣銆岃嚜鍔ㄦ煡鎵炬湰鏈哄紩鎿庛€嶏紝鎴栨墜鍔ㄦ寚瀹氱洰褰曘€佸鍏?zip銆?3. **鎵爜鐧诲綍**锛氱敤鎵嬫満 QQ 鎵簩缁寸爜骞剁‘璁わ紱涔嬪悗鍦ㄤ細璇濋噷鐐广€屽悓姝ャ€嶆媺鍙栬闊炽€?
+> 鍞竴闇€瑕佽嚜澶囩殑鏄涓夋柟寮曟搸锛氳鍙笉鍏佽闅忎粨搴撴垨瀹夎鍖呭垎鍙戯紝涓婃父涓嬭浇婧愪篃宸插け鏁堛€?> 鑾峰彇娓犻亾銆佺洰褰曠粨鏋勫拰缁勮鏂瑰紡瑙?[`docs/engine.md`](docs/engine.md)锛屽畬鏁存楠よ
+> [`docs/quickstart.md`](docs/quickstart.md)銆?
+## 鏈満杞啓锛堝彲閫夛級
 
-QQ 的语音只能在线听。换台设备、清一次缓存、过一阵子，那条语音就没了。群里有人用语音交代了一件事，等你想找，只剩一行「[语音]」。
-
-Sylk 把你能听到的语音存成文件。登录用你自己的账号，能读到的范围和手机 QQ 上看到的一样。
-
-## 三步开始
-
-1. **安装 Sylk**：下载上面的安装包，双击安装。安装包没有签名，Windows 可能提示「未知发布者」，点「更多信息 → 仍要运行」。
-2. **准备一个引擎**：Sylk 不内置第三方引擎。如果你已经有兼容引擎包或 NapCat 目录，打开 Sylk 后点「自动查找本机引擎」，或手动指定目录、导入 zip。
-3. **扫码登录**：用手机 QQ 扫二维码并确认；之后在会话里点「同步」拉取语音。
-
-> 唯一需要自备的是第三方引擎：许可不允许随仓库或安装包分发，上游下载源也已失效。
-> 获取渠道、目录结构和组装方式见 [`docs/engine.md`](docs/engine.md)，完整步骤见
-> [`docs/quickstart.md`](docs/quickstart.md)。
-
-## 本机转写（可选）
-
-语音归档、播放和导出不需要转写。需要转文字时，再准备 whisper.cpp：
-
-1. **安装版用户**：在 PowerShell 里运行
-
+璇煶褰掓。銆佹挱鏀惧拰瀵煎嚭涓嶉渶瑕佽浆鍐欍€傞渶瑕佽浆鏂囧瓧鏃讹紝鍐嶅噯澶?whisper.cpp锛?
+1. **瀹夎鐗堢敤鎴?*锛氬湪 PowerShell 閲岃繍琛?
    ```powershell
    $s = "$env:TEMP\setup-asr.ps1"
-   Invoke-WebRequest https://cdn.jsdelivr.net/gh/nebula-eng/sylk@main/scripts/setup-asr.ps1 -OutFile $s
+   Invoke-WebRequest https://cdn.jsdelivr.net/gh/nebula-eng/sylk@2dfe0df/scripts/setup-asr.ps1 -OutFile $s
    powershell -ExecutionPolicy Bypass -File $s
    ```
 
-   如果下载失败，也可以打开仓库里的
-   [`scripts/setup-asr.ps1`](scripts/setup-asr.ps1)，复制内容到本机 `.ps1` 后运行。
-   脚本会优先直连 GitHub；失败时自动改用镜像下载运行时，模型优先走 hf-mirror。
+   濡傛灉涓嬭浇澶辫触锛屼篃鍙互鎵撳紑浠撳簱閲岀殑
+   [`scripts/setup-asr.ps1`](scripts/setup-asr.ps1)锛屽鍒跺唴瀹瑰埌鏈満 `.ps1` 鍚庤繍琛屻€?   鑴氭湰浼氫紭鍏堢洿杩?GitHub锛涘け璐ユ椂鑷姩鏀圭敤闀滃儚涓嬭浇杩愯鏃讹紝妯″瀷浼樺厛璧?hf-mirror銆?
+   鑴氭湰浼氭妸 `whisper-cli.exe`銆佷緷璧?DLL 鍜?`ggml-base.bin` 涓嬭浇鍒?   `%LOCALAPPDATA%\Sylk\tools`銆?
+2. **婧愮爜鐢ㄦ埛**锛氬湪浠撳簱鐩綍杩愯 `npm run setup:asr`銆?
+3. 鎵撳紑 Sylk 鈫?璁剧疆 鈫?杞啓锛屽惎鐢ㄥ嵆鍙€備笉闇€瑕佹墜濉矾寰勶紱Sylk 浼氳嚜鍔ㄨ瘑鍒?   `%LOCALAPPDATA%\Sylk\tools`銆?
+榛樿鏄?`base` 妯″瀷锛堢害 141 MB锛夛紱涓枃瑕佹眰鏇撮珮鏃惰繍琛?`scripts/setup-asr.ps1 -Model small`锛堢害 466 MB锛夋垨 `-Model medium`銆?GitHub 浠撳簱鍜屽畨瑁呭寘閮戒笉鍖呭惈 whisper 浜岃繘鍒舵垨妯″瀷锛屽彧鏈変笂闈㈢殑涓嬭浇鑴氭湰銆?璇︾粏璇存槑瑙?[`docs/quickstart.md`](docs/quickstart.md#鍙€夋湰鏈鸿浆鍐?銆?
+## 鍔熻兘
 
-   脚本会把 `whisper-cli.exe`、依赖 DLL 和 `ggml-base.bin` 下载到
-   `%LOCALAPPDATA%\Sylk\tools`。
+- **褰掓。**锛氬疄鏃舵帴鏀舵柊璇煶锛涙寜浼氳瘽鍚屾鍘嗗彶锛屽彧鎸戣闊虫锛涙嬁涓嶅埌 WAV 鏃朵繚鐣?`.silk` 鍘熶欢銆?- **鎾斁**锛氭尝褰€佹嫋鍔ㄥ畾浣嶃€?.75脳鈥?脳 鍊嶉€熴€佸崟鏇插惊鐜紱閿洏 `鈫戔啌` 閫夋潯鐩€乣Enter` 鎾斁銆乣鈫?鈫抈 鎹笂涓嬫潯銆乣绌烘牸` 鏆傚仠銆乣S` 鏄熸爣銆?- **杞啓**锛氭湰鏈?`whisper-cli`锛屾垨浠绘剰 OpenAI 鍏煎鎺ュ彛锛涘悗鍙伴€愭潯鎵ц锛屽け璐ュ師鍥犲啓杩涗换鍔￠槦鍒楋紝鏀瑰ソ閰嶇疆鍙噸璇曘€?- **鏁寸悊**锛氭槦鏍囥€佹爣绛俱€佸娉紱鎸夋椂闂存垨鍙戦€佽€呯瓫閫夛紱澶氶€夋壒閲忔槦鏍囥€佽浆鍐欍€佸垹闄ゃ€?- **鎼滅储**锛氬湪褰撳墠浼氳瘽鍐呮悳鏂囧瓧绋裤€佸彂閫佽€呫€佹爣绛撅紱浼氳瘽鍒楄〃鍙崟鐙瓫閫夈€?- **缁熻**锛氫細璇濇椂闀挎帓琛屻€佸彂閫佽€呮帓琛屻€?脳24 娲昏穬鐑姏鍥撅紱鐐规帓琛岀洿鎺ヨ烦鍒板搴旇闊炽€?- **瀵煎嚭**锛氬崟鏉￠煶棰戯紱鏁翠釜浼氳瘽锛堥煶棰?+ `manifest.json` + `transcript.md` + `index.csv` + 绂荤嚎 `archive.html`锛夈€?
+## 鐣岄潰
 
-2. **源码用户**：在仓库目录运行 `npm run setup:asr`。
-
-3. 打开 Sylk → 设置 → 转写，启用即可。不需要手填路径；Sylk 会自动识别
-   `%LOCALAPPDATA%\Sylk\tools`。
-
-默认是 `base` 模型（约 141 MB）；中文要求更高时运行
-`scripts/setup-asr.ps1 -Model small`（约 466 MB）或 `-Model medium`。
-GitHub 仓库和安装包都不包含 whisper 二进制或模型，只有上面的下载脚本。
-详细说明见 [`docs/quickstart.md`](docs/quickstart.md#可选本机转写)。
-
-## 功能
-
-- **归档**：实时接收新语音；按会话同步历史，只挑语音段；拿不到 WAV 时保留 `.silk` 原件。
-- **播放**：波形、拖动定位、0.75×–2× 倍速、单曲循环；键盘 `↑↓` 选条目、`Enter` 播放、`← →` 换上下条、`空格` 暂停、`S` 星标。
-- **转写**：本机 `whisper-cli`，或任意 OpenAI 兼容接口；后台逐条执行，失败原因写进任务队列，改好配置可重试。
-- **整理**：星标、标签、备注；按时间或发送者筛选；多选批量星标、转写、删除。
-- **搜索**：在当前会话内搜文字稿、发送者、标签；会话列表可单独筛选。
-- **统计**：会话时长排行、发送者排行、7×24 活跃热力图；点排行直接跳到对应语音。
-- **导出**：单条音频；整个会话（音频 + `manifest.json` + `transcript.md` + `index.csv` + 离线 `archive.html`）。
-
-## 界面
-
-| 语音列表 | 语音详情 |
+| 璇煶鍒楄〃 | 璇煶璇︽儏 |
 |---|---|
-| ![语音列表](docs/screenshots/02-main-light.png) | ![语音详情](docs/screenshots/03-detail-light.png) |
+| ![璇煶鍒楄〃](docs/screenshots/02-main-light.png) | ![璇煶璇︽儏](docs/screenshots/03-detail-light.png) |
 
-| 统计 | 任务队列 |
+| 缁熻 | 浠诲姟闃熷垪 |
 |---|---|
-| ![统计](docs/screenshots/04-stats-light.png) | ![任务队列](docs/screenshots/05-jobs-light.png) |
+| ![缁熻](docs/screenshots/04-stats-light.png) | ![浠诲姟闃熷垪](docs/screenshots/05-jobs-light.png) |
 
-| 引擎设置 | 转写设置 |
+| 寮曟搸璁剧疆 | 杞啓璁剧疆 |
 |---|---|
-| ![引擎设置](docs/screenshots/06-settings-engine.png) | ![转写设置](docs/screenshots/07-settings-asr.png) |
+| ![寮曟搸璁剧疆](docs/screenshots/06-settings-engine.png) | ![杞啓璁剧疆](docs/screenshots/07-settings-asr.png) |
 
-| 深色主题 | 登录页 |
+| 娣辫壊涓婚 | 鐧诲綍椤?|
 |---|---|
-| ![深色主题](docs/screenshots/09-main-dark.png) | ![登录页](docs/screenshots/10-login-dark.png) |
+| ![娣辫壊涓婚](docs/screenshots/09-main-dark.png) | ![鐧诲綍椤礭(docs/screenshots/10-login-dark.png) |
 
-| 时间筛选 | 多选操作 |
+| 鏃堕棿绛涢€?| 澶氶€夋搷浣?|
 |---|---|
-| ![时间筛选](docs/screenshots/11-range-week.png) | ![多选操作](docs/screenshots/12-bulk.png) |
+| ![鏃堕棿绛涢€塢(docs/screenshots/11-range-week.png) | ![澶氶€夋搷浣淽(docs/screenshots/12-bulk.png) |
 
-## 文档
+## 鏂囨。
 
-| 文档 | 内容 |
+| 鏂囨。 | 鍐呭 |
 |---|---|
-| [`docs/quickstart.md`](docs/quickstart.md) | 安装、引擎接入、扫码、第一次同步、常见错误 |
-| [`docs/engine.md`](docs/engine.md) | 三种引擎接入方式、目录识别、获取与组装、排错 |
-| [`docs/source-build.md`](docs/source-build.md) | 从源码构建、开发模式、无 QQ 的 mock 全链路 |
-| [`docs/faq.md`](docs/faq.md) | 安装、引擎、同步、转写、数据清理的完整问答 |
-| [`docs/privacy.md`](docs/privacy.md) | 数据清单、出网请求、密钥与日志、删除范围与边界 |
-| [`docs/architecture.md`](docs/architecture.md) | 前后端结构、事件、错误处理与隐私层 |
-| [`docs/releasing.md`](docs/releasing.md) | 版本号、构建、打 tag 与发布检查清单 |
-| [`SECURITY.md`](SECURITY.md) | 威胁模型与安全问题报告方式 |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | 提交范围、构建与测试要求 |
-| [`CHANGELOG.md`](CHANGELOG.md) | 版本记录 |
+| [`docs/quickstart.md`](docs/quickstart.md) | 瀹夎銆佸紩鎿庢帴鍏ャ€佹壂鐮併€佺涓€娆″悓姝ャ€佸父瑙侀敊璇?|
+| [`docs/engine.md`](docs/engine.md) | 涓夌寮曟搸鎺ュ叆鏂瑰紡銆佺洰褰曡瘑鍒€佽幏鍙栦笌缁勮銆佹帓閿?|
+| [`docs/source-build.md`](docs/source-build.md) | 浠庢簮鐮佹瀯寤恒€佸紑鍙戞ā寮忋€佹棤 QQ 鐨?mock 鍏ㄩ摼璺?|
+| [`docs/faq.md`](docs/faq.md) | 瀹夎銆佸紩鎿庛€佸悓姝ャ€佽浆鍐欍€佹暟鎹竻鐞嗙殑瀹屾暣闂瓟 |
+| [`docs/privacy.md`](docs/privacy.md) | 鏁版嵁娓呭崟銆佸嚭缃戣姹傘€佸瘑閽ヤ笌鏃ュ織銆佸垹闄よ寖鍥翠笌杈圭晫 |
+| [`docs/architecture.md`](docs/architecture.md) | 鍓嶅悗绔粨鏋勩€佷簨浠躲€侀敊璇鐞嗕笌闅愮灞?|
+| [`docs/releasing.md`](docs/releasing.md) | 鐗堟湰鍙枫€佹瀯寤恒€佹墦 tag 涓庡彂甯冩鏌ユ竻鍗?|
+| [`SECURITY.md`](SECURITY.md) | 濞佽儊妯″瀷涓庡畨鍏ㄩ棶棰樻姤鍛婃柟寮?|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | 鎻愪氦鑼冨洿銆佹瀯寤轰笌娴嬭瘯瑕佹眰 |
+| [`CHANGELOG.md`](CHANGELOG.md) | 鐗堟湰璁板綍 |
 
-## 常见问题（节选）
+## 甯歌闂锛堣妭閫夛級
 
-**双击安装包，Windows 提示「未知发布者」？**
-安装包没有代码签名，这是预期行为。点「更多信息 → 仍要运行」。如果公司电脑有软件白名单，需要先让 IT 放行。
+**鍙屽嚮瀹夎鍖咃紝Windows 鎻愮ず銆屾湭鐭ュ彂甯冭€呫€嶏紵**
+瀹夎鍖呮病鏈変唬鐮佺鍚嶏紝杩欐槸棰勬湡琛屼负銆傜偣銆屾洿澶氫俊鎭?鈫?浠嶈杩愯銆嶃€傚鏋滃叕鍙哥數鑴戞湁杞欢鐧藉悕鍗曪紝闇€瑕佸厛璁?IT 鏀捐銆?
+**鎵撳紑鍚庢彁绀烘病鏈夊紩鎿?/ 鑷姩鏌ユ壘鎵句笉鍒帮紵**
+Sylk 涓嶅唴缃紩鎿庯紝闇€瑕佸吋瀹瑰紩鎿庡寘鎴?NapCat 鐩綍銆傛斁鍦ㄤ笅杞姐€佹闈€佹枃妗ｆ垨鐩樼鏍圭洰褰曚細琚嚜鍔ㄦ壘鍒帮紱鏀惧湪鍒灏辩敤銆屾寚瀹氬紩鎿庣洰褰曘€嶇洿鎺ラ€夈€傝幏鍙栦笌缁勮瑙?[`docs/engine.md`](docs/engine.md)銆?
+**浜岀淮鐮佹槸绌虹櫧鐨勶紝鎴栬€呬竴鐩淬€屾鍦ㄥ惎鍔ㄣ€嶏紵**
+蹇€熺櫥褰曞崱浣忔椂锛孲ylk 浼氬湪 60 绉掑悗鑷姩鏀圭敤鎵爜鐧诲綍锛涗篃鍙互鐐逛竴娆°€屽埛鏂颁簩缁寸爜銆嶃€備笉瑕佽繛缁噸鍚紩鎿庯紝閬垮厤瑙﹀彂鑵捐椋庢帶銆?
+**鎵爜鎻愮ず銆屽綋鍓嶆壂鐮佹搷浣滃瓨鍦ㄥ畨鍏ㄩ闄┿€嶏紵**
+杩欐槸鑵捐璐﹀彿渚х殑椋庢帶锛屼笉鏄?Sylk 鎶ラ敊銆傚厛鍋滃紩鎿庯紝绛?10鈥?0 鍒嗛挓锛屽啀鐢ㄦ墜鏈?QQ 鍦ㄥ父鐢ㄧ綉缁滀笅鎵竴娆°€?
+**璇煶鏄剧ず銆岄煶棰戣繕娌′笅杞姐€嶏紵**
+鍘讳换鍔￠槦鍒楃湅澶辫触鍘熷洜锛屽鏁版槸 QQ 璇煶閾炬帴杩囨湡銆傜偣銆岄噸璇曞け璐ャ€嶆垨閲嶆柊鍚屾璇ヤ細璇濄€?
+鏇村闂瑙?[`docs/faq.md`](docs/faq.md)銆?
+## 闅愮涓庢暟鎹?
+- 璇煶銆佽浆鍐欐枃鏈€佹暟鎹簱鍜屽紩鎿庣櫥褰曟€侀粯璁ゅ彧淇濆瓨鍦ㄦ湰鏈猴紱娌℃湁閬ユ祴锛屼笉鍚戦」鐩湇鍔″櫒鍥炰紶鍐呭銆?- 鍑虹綉璇锋眰鍙湁浜旂被锛歈Q 鐧诲綍涓庢秷鎭€佽闊充笅杞斤紙QQ CDN锛夈€佺兢/濂藉弸澶村儚鍔犺浇锛坄*.qlogo.cn`锛夈€佷綘涓诲姩寮€鍚殑浜戠杞啓銆佷綘鎵嬪姩瑙﹀彂鐨勫紩鎿庡寘涓嬭浇銆?- 浜戠杞啓鐨?API Key 鐢?Windows DPAPI 鍔犲瘑鍚庡啓鍏ヨ缃枃浠讹紱寮曟搸浠ょ墝姣忔鍚姩闅忔満鐢熸垚锛屽彧鐩戝惉 `127.0.0.1`銆?- 璁剧疆 鈫?闅愮鎻愪緵鎴睆闃叉姢銆佹寜澶╄嚜鍔ㄦ竻鐞嗐€佷竴閿竻闄ゆ湰鏈烘暟鎹紱鏃ュ織榛樿淇濈暀 14 澶╁苟鍋氳劚鏁忋€?- 鏁版嵁搴撴槸鏄庢枃 SQLite锛屼緷璧?Windows 璐︽埛闅旂锛涢渶瑕佹洿寮轰繚鎶ゆ椂鎶婂簲鐢ㄦ暟鎹洰褰曟斁鍒?BitLocker / EFS 鍔犲瘑纾佺洏銆?
+瀹屾暣璇存槑瑙?[`docs/privacy.md`](docs/privacy.md)锛屽畨鍏ㄨ竟鐣岃 [`SECURITY.md`](SECURITY.md)銆?
+## 鎯虫敼浠ｇ爜
 
-**打开后提示没有引擎 / 自动查找找不到？**
-Sylk 不内置引擎，需要兼容引擎包或 NapCat 目录。放在下载、桌面、文档或盘符根目录会被自动找到；放在别处就用「指定引擎目录」直接选。获取与组装见 [`docs/engine.md`](docs/engine.md)。
-
-**二维码是空白的，或者一直「正在启动」？**
-快速登录卡住时，Sylk 会在 60 秒后自动改用扫码登录；也可以点一次「刷新二维码」。不要连续重启引擎，避免触发腾讯风控。
-
-**扫码提示「当前扫码操作存在安全风险」？**
-这是腾讯账号侧的风控，不是 Sylk 报错。先停引擎，等 10–30 分钟，再用手机 QQ 在常用网络下扫一次。
-
-**语音显示「音频还没下载」？**
-去任务队列看失败原因，多数是 QQ 语音链接过期。点「重试失败」或重新同步该会话。
-
-更多问题见 [`docs/faq.md`](docs/faq.md)。
-
-## 隐私与数据
-
-- 语音、转写文本、数据库和引擎登录态默认只保存在本机；没有遥测，不向项目服务器回传内容。
-- 出网请求只有五类：QQ 登录与消息、语音下载（QQ CDN）、群/好友头像加载（`*.qlogo.cn`）、你主动开启的云端转写、你手动触发的引擎包下载。
-- 云端转写的 API Key 用 Windows DPAPI 加密后写入设置文件；引擎令牌每次启动随机生成，只监听 `127.0.0.1`。
-- 设置 → 隐私提供截屏防护、按天自动清理、一键清除本机数据；日志默认保留 14 天并做脱敏。
-- 数据库是明文 SQLite，依赖 Windows 账户隔离；需要更强保护时把应用数据目录放到 BitLocker / EFS 加密磁盘。
-
-完整说明见 [`docs/privacy.md`](docs/privacy.md)，安全边界见 [`SECURITY.md`](SECURITY.md)。
-
-## 想改代码
-
-需要 Node.js 20+、Rust 1.80+、VS Build Tools（勾「使用 C++ 的桌面开发」）和 WebView2 运行时。
-
+闇€瑕?Node.js 20+銆丷ust 1.80+銆乂S Build Tools锛堝嬀銆屼娇鐢?C++ 鐨勬闈㈠紑鍙戙€嶏級鍜?WebView2 杩愯鏃躲€?
 ```bash
 git clone https://github.com/nebula-eng/sylk.git
 cd sylk
 build.cmd
 ```
 
-首次约 5–10 分钟，之后增量构建约 1 分钟。更细的开发、调试、无 QQ mock 全链路和检查命令见 [`docs/source-build.md`](docs/source-build.md)。
+棣栨绾?5鈥?0 鍒嗛挓锛屼箣鍚庡閲忔瀯寤虹害 1 鍒嗛挓銆傛洿缁嗙殑寮€鍙戙€佽皟璇曘€佹棤 QQ mock 鍏ㄩ摼璺拰妫€鏌ュ懡浠よ [`docs/source-build.md`](docs/source-build.md)銆?
+## 绗笁鏂逛笌璁稿彲
 
-## 第三方与许可
-
-- Sylk 自己的代码使用 [MIT](LICENSE)。
-- NapCat、V8 兼容引擎包及 QQ 客户端属于各自的第三方项目，不在本仓库或安装包中分发；使用前请自行确认许可与账号风险。
-- QQ 是腾讯的商标，本项目与腾讯及 NapCat 维护者没有隶属关系。
+- Sylk 鑷繁鐨勪唬鐮佷娇鐢?[MIT](LICENSE)銆?- NapCat銆乂8 鍏煎寮曟搸鍖呭強 QQ 瀹㈡埛绔睘浜庡悇鑷殑绗笁鏂归」鐩紝涓嶅湪鏈粨搴撴垨瀹夎鍖呬腑鍒嗗彂锛涗娇鐢ㄥ墠璇疯嚜琛岀‘璁よ鍙笌璐﹀彿椋庨櫓銆?- QQ 鏄吘璁殑鍟嗘爣锛屾湰椤圭洰涓庤吘璁強 NapCat 缁存姢鑰呮病鏈夐毝灞炲叧绯汇€?
