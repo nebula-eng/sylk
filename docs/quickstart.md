@@ -83,15 +83,32 @@ Sylk 通过 OneBot 11 读取 QQ 消息，需要一个引擎把 QQ 的数据暴�
 
 ## 可选：本机转写
 
-如果要用本机 whisper.cpp：把 `whisper-cli.exe` 和 `ggml-*.bin` 放到
-`%LOCALAPPDATA%\Sylk\tools`，然后在 设置 → 转写 里启用即可；Sylk 会自动找到这套文件。
-源码环境可以运行：
+语音归档和播放不需要这一步；要把语音转成文字时再装 whisper.cpp。
+
+**安装版用户**：在 PowerShell 里运行：
+
+```powershell
+$script = "$env:TEMP\setup-asr.ps1"
+Invoke-WebRequest https://raw.githubusercontent.com/nebula-eng/sylk/main/scripts/setup-asr.ps1 -OutFile $script
+powershell -ExecutionPolicy Bypass -File $script
+```
+
+脚本会把 whisper.cpp 的 Windows 运行时和 `ggml-base.bin` 下载到
+`%LOCALAPPDATA%\Sylk\tools`，然后打开 设置 → 转写，启用即可；Sylk 会自动识别，
+不需要手填路径。
+
+**源码用户**：
 
 ```powershell
 npm run setup:asr
 ```
 
-默认下载 `base` 模型；中文要求更高时用 `powershell -File scripts/setup-asr.ps1 -Model small`。
+默认 `base` 模型；更准可运行 `powershell -ExecutionPolicy Bypass -File scripts/setup-asr.ps1 -Model small`
+或 `medium`。
+
+**手动安装**：把 `whisper-cli.exe`、`whisper.dll`、`ggml*.dll` 和 `ggml-*.bin`
+放到 `%LOCALAPPDATA%\Sylk\tools`，或放到 `whisper-cli.exe` 同目录，应用会自动找。
+GitHub 仓库和安装包不含这些文件，避免 100 MB 以上的模型进入版本库。
 
 ## 6. 常见错误与下一步
 

@@ -33,6 +33,31 @@ Sylk 把你能听到的语音存成文件。登录用你自己的账号，能读
 > 获取渠道、目录结构和组装方式见 [`docs/engine.md`](docs/engine.md)，完整步骤见
 > [`docs/quickstart.md`](docs/quickstart.md)。
 
+## 本机转写（可选）
+
+语音归档、播放和导出不需要转写。需要转文字时，再准备 whisper.cpp：
+
+1. **安装版用户**：在 PowerShell 里运行
+
+   ```powershell
+   $s = "$env:TEMP\setup-asr.ps1"
+   Invoke-WebRequest https://raw.githubusercontent.com/nebula-eng/sylk/main/scripts/setup-asr.ps1 -OutFile $s
+   powershell -ExecutionPolicy Bypass -File $s
+   ```
+
+   脚本会把 `whisper-cli.exe`、依赖 DLL 和 `ggml-base.bin` 下载到
+   `%LOCALAPPDATA%\Sylk\tools`。
+
+2. **源码用户**：在仓库目录运行 `npm run setup:asr`。
+
+3. 打开 Sylk → 设置 → 转写，启用即可。不需要手填路径；Sylk 会自动识别
+   `%LOCALAPPDATA%\Sylk\tools`。
+
+默认是 `base` 模型（约 141 MB）；中文要求更高时运行
+`scripts/setup-asr.ps1 -Model small`（约 466 MB）或 `-Model medium`。
+GitHub 仓库和安装包都不包含 whisper 二进制或模型，只有上面的下载脚本。
+详细说明见 [`docs/quickstart.md`](docs/quickstart.md#可选本机转写)。
+
 ## 功能
 
 - **归档**：实时接收新语音；按会话同步历史，只挑语音段；拿不到 WAV 时保留 `.silk` 原件。

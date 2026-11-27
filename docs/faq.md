@@ -71,10 +71,20 @@ NapCat 对没有历史消息的会话会返回这个提示。0.2.7 起按空会�
 ## 转写
 
 **本机转写怎么配**
-把 `whisper-cli.exe` 和 `ggml-*.bin` 放到 `%LOCALAPPDATA%\Sylk\tools`，Sylk 会自动识别；
-打开 设置 → 转写，启用即可，不需要手填路径。也可以手动指定任意位置。
-源码环境可以直接运行 `npm run setup:asr` 下载；默认 `base` 模型，可用 `-Model small`
-换成更准的版本。中文建议 small/medium；CPU 上一条 10 秒语音大约 2–4 秒。
+最简单的步骤：
+
+1. 在 PowerShell 运行：
+   ```powershell
+   $s = "$env:TEMP\setup-asr.ps1"
+   Invoke-WebRequest https://raw.githubusercontent.com/nebula-eng/sylk/main/scripts/setup-asr.ps1 -OutFile $s
+   powershell -ExecutionPolicy Bypass -File $s
+   ```
+2. 打开 设置 → 转写，启用。
+
+脚本会把 `whisper-cli.exe`、依赖 DLL 和 `ggml-base.bin` 放到
+`%LOCALAPPDATA%\Sylk\tools`，Sylk 自动识别，不需要手填路径。
+源码用户也可以直接运行 `npm run setup:asr`。默认 base 模型约 141 MB；中文建议
+`-Model small` 或 `-Model medium`。GitHub 仓库和安装包不包含 whisper 文件。
 
 **云端转写安全吗**
 音频会发送到你填写的 OpenAI 兼容接口。地址必须是 HTTPS（本机回环地址例外），
