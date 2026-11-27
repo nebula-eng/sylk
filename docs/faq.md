@@ -76,10 +76,11 @@ NapCat 对没有历史消息的会话会返回这个提示。0.2.7 起按空会�
 1. 在 PowerShell 运行：
    ```powershell
    $s = "$env:TEMP\setup-asr.ps1"
-   Invoke-WebRequest https://github.com/nebula-eng/sylk/releases/latest/download/setup-asr.ps1 -OutFile $s
+   Invoke-WebRequest https://cdn.jsdelivr.net/gh/nebula-eng/sylk@main/scripts/setup-asr.ps1 -OutFile $s
    powershell -ExecutionPolicy Bypass -File $s
    ```
    下载失败时，打开仓库 `scripts/setup-asr.ps1`，复制内容到本机 `.ps1` 后运行。
+   脚本会优先直连 GitHub，失败时自动换镜像；模型优先走 hf-mirror。
 2. 打开 设置 → 转写，启用。
 
 脚本会把 `whisper-cli.exe`、依赖 DLL 和 `ggml-base.bin` 放到

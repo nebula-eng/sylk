@@ -17,6 +17,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 $whisperVersion = 'v1.7.6'
 $whisperZipUrl = "https://github.com/ggerganov/whisper.cpp/releases/download/$whisperVersion/whisper-bin-x64.zip"
+$whisperZipFallback = "https://gh-proxy.com/$whisperZipUrl"
 $modelUrl = "https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/ggml-$Model.bin"
 $modelFallback = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-$Model.bin"
 
@@ -38,7 +39,7 @@ New-Item -ItemType Directory -Path $work -Force | Out-Null
 
 try {
   $zip = Join-Path $work 'whisper-bin-x64.zip'
-  Download $whisperZipUrl $zip $null
+  Download $whisperZipUrl $zip $whisperZipFallback
   Expand-Archive -LiteralPath $zip -DestinationPath (Join-Path $work 'whisper') -Force
 
   $release = Get-ChildItem (Join-Path $work 'whisper') -Recurse -File -Filter 'whisper-cli.exe' |

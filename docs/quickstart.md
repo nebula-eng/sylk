@@ -89,12 +89,13 @@ Sylk 通过 OneBot 11 读取 QQ 消息，需要一个引擎把 QQ 的数据暴�
 
 ```powershell
 $script = "$env:TEMP\setup-asr.ps1"
-Invoke-WebRequest https://github.com/nebula-eng/sylk/releases/latest/download/setup-asr.ps1 -OutFile $script
+Invoke-WebRequest https://cdn.jsdelivr.net/gh/nebula-eng/sylk@main/scripts/setup-asr.ps1 -OutFile $script
 powershell -ExecutionPolicy Bypass -File $script
 ```
 
 如果下载失败，打开仓库里的 [`scripts/setup-asr.ps1`](../scripts/setup-asr.ps1)，
-复制内容到本机 `.ps1` 后运行。
+复制内容到本机 `.ps1` 后运行。脚本会优先直连 GitHub，失败时自动换镜像下载运行时；
+模型优先走 hf-mirror。
 
 脚本会把 whisper.cpp 的 Windows 运行时和 `ggml-base.bin` 下载到
 `%LOCALAPPDATA%\Sylk\tools`，然后打开 设置 → 转写，启用即可；Sylk 会自动识别，
