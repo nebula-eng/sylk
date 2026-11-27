@@ -41,9 +41,12 @@ Sylk 把你能听到的语音存成文件。登录用你自己的账号，能读
 
    ```powershell
    $s = "$env:TEMP\setup-asr.ps1"
-   Invoke-WebRequest https://raw.githubusercontent.com/nebula-eng/sylk/main/scripts/setup-asr.ps1 -OutFile $s
+   Invoke-WebRequest https://github.com/nebula-eng/sylk/releases/latest/download/setup-asr.ps1 -OutFile $s
    powershell -ExecutionPolicy Bypass -File $s
    ```
+
+   如果下载失败，也可以打开仓库里的
+   [`scripts/setup-asr.ps1`](scripts/setup-asr.ps1)，复制内容到本机 `.ps1` 后运行。
 
    脚本会把 `whisper-cli.exe`、依赖 DLL 和 `ggml-base.bin` 下载到
    `%LOCALAPPDATA%\Sylk\tools`。

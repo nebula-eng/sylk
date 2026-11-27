@@ -2,6 +2,14 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
+## [0.4.3] - 2026-11-27
+
+### 文档与发布
+
+- 转写运行时下载脚本 `setup-asr.ps1` 随 Release 一起发布，安装版用户不用 clone 仓库即可一键下载。
+- README、快速开始、FAQ 增加「本机转写」步骤：下载脚本 → 放到 `%LOCALAPPDATA%\Sylk\tools` → 设置里启用。
+- `SHA256SUMS.txt` 同时包含安装包和转写脚本的校验值。
+
 ## [0.4.2] - 2026-11-27
 
 ### 新增

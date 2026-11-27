@@ -107,6 +107,10 @@ jobs:
           "安装包 {0}：{1:N1} MB，未包含引擎（符合预期）" -f $exe.Name, $sizeMb
           $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
           "$hash  $($exe.Name)" | Set-Content SHA256SUMS.txt -Encoding ascii
+          if (Test-Path scripts/setup-asr.ps1) {
+            $scriptHash = (Get-FileHash scripts/setup-asr.ps1 -Algorithm SHA256).Hash.ToLower()
+            "$scriptHash  setup-asr.ps1" | Add-Content SHA256SUMS.txt -Encoding ascii
+          }
 
       - name: 生成发布说明
         shell: pwsh
@@ -151,6 +155,7 @@ jobs:
           files: |
             src-tauri/target/release/bundle/nsis/*.exe
             SHA256SUMS.txt
+            scripts/setup-asr.ps1
           fail_on_unmatched_files: true
           draft: ${{ github.event_name == 'workflow_dispatch' && inputs.draft || false }}
           body_path: release-notes.md
