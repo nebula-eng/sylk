@@ -4,7 +4,7 @@
   "engines": {
     "node": ">=20"
   },
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Sylk —— 把 QQ 语音消息存档、转写、归纳的本地优先桌面应用",
   "type": "module",
   "license": "MIT",

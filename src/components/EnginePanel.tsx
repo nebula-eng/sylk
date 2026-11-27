@@ -1,19 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  Check,
   CircleAlert,
   FolderOpen,
   Loader2,
   LogOut,
   Power,
   RefreshCw,
-  TriangleAlert,
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
 import { formatDuration } from "@/lib/format";
 import { useApp } from "@/lib/store";
-import type { DiagnoseItem, EnginePhase, Settings } from "@/lib/types";
+import type { EnginePhase, Settings } from "@/lib/types";
 import { Button, Field, Segmented, Switch, cn } from "@/components/ui/primitives";
 
 const PHASE_LABEL: Record<EnginePhase, string> = {
@@ -52,16 +50,11 @@ export function EnginePanel({
   const toast = useApp((state) => state.toast);
 
   const [busy, setBusy] = useState(false);
-  const [diagnose, setDiagnose] = useState<DiagnoseItem[] | null>(null);
   const [showLogs, setShowLogs] = useState(false);
 
   const phase = engine?.phase ?? "idle";
   const tone = phaseTone(phase);
   const embedded = draft.engine.mode !== "external";
-
-  useEffect(() => {
-    void api.engineDiagnose().then(setDiagnose).catch(() => setDiagnose(null));
-  }, [phase, engine?.napcatDir]);
 
   const patchEngine = (next: Partial<Settings["engine"]>) =>
     patch({ engine: { ...draft.engine, ...next } });
@@ -310,31 +303,6 @@ export function EnginePanel({
               checked={draft.engine.autoSync}
               onChange={(value) => patchEngine({ autoSync: value })}
             />
-          </div>
-
-          <div className="section__head" style={{ marginTop: 20 }}>
-            <span className="section__title">环境自检</span>
-            <button
-              type="button"
-              className="link-btn section__action"
-              onClick={() => void api.engineDiagnose().then(setDiagnose)}
-            >
-              重新检测
-            </button>
-          </div>
-          <div className="diagnose">
-            {(diagnose ?? []).map((item) => (
-              <div className="diagnose__row" key={item.key}>
-                <span className={cn("diagnose__icon", item.ok ? "is-ok" : "is-bad")}>
-                  {item.ok ? <Check size={10} /> : <TriangleAlert size={10} />}
-                </span>
-                <span className="diagnose__label">{item.label}</span>
-                <span className="diagnose__detail" title={item.detail}>
-                  {item.detail}
-                </span>
-              </div>
-            ))}
-            {!diagnose ? <div className="form-hint">正在检测…</div> : null}
           </div>
         </>
       ) : (

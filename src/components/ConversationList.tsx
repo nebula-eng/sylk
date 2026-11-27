@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Search, Users, User } from "lucide-react";
-
 import { useApp } from "@/lib/store";
 import { formatDuration, formatRelative } from "@/lib/format";
 import { Avatar, cn } from "@/components/ui/primitives";
@@ -11,7 +10,6 @@ export function ConversationList() {
   const activeId = useApp((state) => state.activeConversationId);
   const selectConversation = useApp((state) => state.selectConversation);
   const account = useApp((state) => state.connection.account);
-  const setSearchOpen = useApp((state) => state.setSearchOpen);
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -45,15 +43,6 @@ export function ConversationList() {
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          className="icon-btn"
-          title="全局搜索（Ctrl K）"
-          aria-label="全局搜索"
-          onClick={() => setSearchOpen(true)}
-        >
-          <Search size={15} />
-        </button>
       </div>
 
       <div className="conv-pane__search">

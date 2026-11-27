@@ -11,7 +11,6 @@ import { JobsView } from "@/components/JobsView";
 import { LoginView } from "@/components/LoginView";
 import { PlayerBar } from "@/components/PlayerBar";
 import { Rail } from "@/components/Rail";
-import { SearchPalette } from "@/components/SearchPalette";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { StatsView } from "@/components/StatsView";
 import { Toasts } from "@/components/Toasts";
@@ -121,18 +120,8 @@ export default function App() {
       );
       const appState = useApp.getState();
 
-      if ((event.ctrlKey || event.metaKey) && ["k", "f"].includes(event.key.toLowerCase())) {
-        event.preventDefault();
-        appState.setSearchOpen(true);
-        return;
-      }
-      if (event.key === "Escape") {
-        if (appState.settingsOpen || appState.searchOpen) return; // 由弹窗自己处理
-        appState.setSearchOpen(false);
-        return;
-      }
       if (typing || interactive) return;
-      if (appState.settingsOpen || appState.searchOpen) return;
+      if (appState.settingsOpen) return;
 
       const app = appState;
       const player = usePlayer.getState();
@@ -332,7 +321,6 @@ export default function App() {
       )}
 
       {showLogin || !playerVoiceId ? null : <PlayerBar />}
-      <SearchPalette />
       <SettingsPanel />
       <Toasts />
     </div>

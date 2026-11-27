@@ -39,9 +39,9 @@ Sylk 把你能听到的语音存成文件。登录用你自己的账号，能读
 - **播放**：波形、拖动定位、0.75×–2× 倍速、单曲循环；键盘 `↑↓` 选条目、`Enter` 播放、`← →` 换上下条、`空格` 暂停、`S` 星标。
 - **转写**：本机 `whisper-cli`，或任意 OpenAI 兼容接口；后台逐条执行，失败原因写进任务队列，改好配置可重试。
 - **整理**：星标、标签、备注；按时间或发送者筛选；多选批量星标、转写、删除。
-- **搜索**：搜文字稿、发送者、会话名、标签、备注；`Ctrl K` 随时打开。
+- **搜索**：在当前会话内搜文字稿、发送者、标签；会话列表可单独筛选。
 - **统计**：会话时长排行、发送者排行、7×24 活跃热力图；点排行直接跳到对应语音。
-- **导出**：单条音频；整个会话（音频 + `manifest.json` + `transcript.md` + `index.csv` + 离线 `archive.html`）；筛选结果 CSV。
+- **导出**：单条音频；整个会话（音频 + `manifest.json` + `transcript.md` + `index.csv` + 离线 `archive.html`）。
 
 ## 界面
 
@@ -61,9 +61,9 @@ Sylk 把你能听到的语音存成文件。登录用你自己的账号，能读
 |---|---|
 | ![深色主题](docs/screenshots/09-main-dark.png) | ![登录页](docs/screenshots/10-login-dark.png) |
 
-| 全局搜索 | 多选操作 |
+| 时间筛选 | 多选操作 |
 |---|---|
-| ![全局搜索](docs/screenshots/08-search-light.png) | ![多选操作](docs/screenshots/12-bulk.png) |
+| ![时间筛选](docs/screenshots/11-range-week.png) | ![多选操作](docs/screenshots/12-bulk.png) |
 
 ## 文档
 

@@ -4,7 +4,6 @@ import {
   Clock3,
   FileText,
   HardDrive,
-  RefreshCw,
   Flame,
   Users,
   ChevronRight,
@@ -12,11 +11,10 @@ import {
 
 import { formatBytes, formatDuration, percent, weekdayShort } from "@/lib/format";
 import { useApp } from "@/lib/store";
-import { Avatar, Button } from "@/components/ui/primitives";
+import { Avatar } from "@/components/ui/primitives";
 
 export function StatsView() {
   const stats = useApp((state) => state.stats);
-  const loadStats = useApp((state) => state.loadStats);
   const conversations = useApp((state) => state.conversations);
   const selectConversation = useApp((state) => state.selectConversation);
   const setFilter = useApp((state) => state.setFilter);
@@ -38,7 +36,7 @@ export function StatsView() {
   if (!stats || stats.overview.voices === 0) {
     return (
       <div className="main">
-        <PageHead title="统计" subtitle="还没有语音" onRefresh={() => void loadStats()} />
+        <PageHead title="统计" subtitle="还没有语音" />
         <div className="empty">
           <div className="empty__title">还没有语音</div>
           <div className="empty__text">同步后这里会显示统计。</div>
@@ -54,7 +52,6 @@ export function StatsView() {
       <PageHead
         title="统计"
         subtitle={`${overview.conversations} 个会话 · ${overview.voices} 条 · ${formatDuration(overview.totalMs)}`}
-        onRefresh={() => void loadStats()}
       />
 
       <div className="stats-view">
@@ -208,25 +205,12 @@ export function StatsView() {
   );
 }
 
-function PageHead({
-  title,
-  subtitle,
-  onRefresh,
-}: {
-  title: string;
-  subtitle: string;
-  onRefresh: () => void;
-}) {
+function PageHead({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <header className="main__head">
       <div className="main__titles">
         <div className="main__title">{title}</div>
         <div className="main__sub">{subtitle}</div>
-      </div>
-      <div className="main__actions">
-        <Button variant="ghost" size="sm" icon={<RefreshCw size={13} />} onClick={onRefresh}>
-          刷新
-        </Button>
       </div>
     </header>
   );

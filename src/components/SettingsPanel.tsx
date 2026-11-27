@@ -8,8 +8,6 @@ import {
   Info,
   FolderOpen,
   Check,
-  FileText,
-  Wand2,
   Shield,
   ShieldAlert,
   Cog,
@@ -50,15 +48,12 @@ export function SettingsPanel() {
   const [draft, setDraft] = useState<Settings | null>(null);
   const [probe, setProbe] = useState<AsrProbe | null>(null);
   const [library, setLibrary] = useState<LibraryStats | null>(null);
-  const [testing, setTesting] = useState(false);
-  const [confirmWipe, setConfirmWipe] = useState(false);
   const [privacy, setPrivacy] = useState<PrivacyStats | null>(null);
   const [confirmWipeAll, setConfirmWipeAll] = useState(false);
 
   useEffect(() => {
     if (open && settings) {
       setDraft(structuredClone(settings));
-      setConfirmWipe(false);
       setConfirmWipeAll(false);
     }
   }, [open, settings]);
@@ -116,20 +111,6 @@ export function SettingsPanel() {
     const { open: openDialog } = await import("@tauri-apps/plugin-dialog");
     const picked = await openDialog({ multiple: false, ...options });
     if (typeof picked === "string") apply(picked);
-  };
-
-  const testConnection = async () => {
-    setTesting(true);
-    try {
-      // 测试连接需要先把草稿写入后端，因此这里会保存当前设置。
-      await saveSettings(draft, { silent: true });
-      const result = await api.testConnection();
-      toast(result.status === "online" ? "success" : "error", result.message);
-    } catch (error) {
-      toast("error", error instanceof Error ? error.message : String(error));
-    } finally {
-      setTesting(false);
-    }
   };
 
   const doConnect = async () => {
@@ -236,9 +217,6 @@ export function SettingsPanel() {
                 </div>
 
                 <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                  <Button variant="ghost" onClick={() => void testConnection()} disabled={testing}>
-                    {testing ? "正在测试…" : "保存并测试连接"}
-                  </Button>
                   <Button variant="primary" onClick={() => void doConnect()}>
                     保存并连接
                   </Button>
@@ -488,28 +466,6 @@ export function SettingsPanel() {
                   <span>{probe === null ? "正在检测…" : probe.available ? "引擎就绪" : "引擎不可用"}</span>
                   <span className="check-line__detail">{probe?.detail ?? "正在读取引擎状态"}</span>
                 </div>
-
-                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                  <Button
-                    variant="ghost"
-                    icon={<Wand2 size={13} />}
-                    onClick={async () => {
-                      try {
-                        await saveSettings(draft, { silent: true });
-                        const count = await api.enqueueTranscribe(200);
-                        toast("info", count > 0 ? `已加入 ${count} 条转写任务` : "没有需要转写的语音");
-                      } catch (error) {
-                        toast("error", error instanceof Error ? error.message : String(error));
-                      }
-                    }}
-                  >
-                    转写未处理的语音
-                  </Button>
-                </div>
-
-                <div className="form-hint" style={{ marginTop: 12 }}>
-                  转写在后台串行执行。失败原因见任务页，修复配置后可重试。
-                </div>
               </>
             ) : null}
 
@@ -704,55 +660,6 @@ export function SettingsPanel() {
                   API Key 用 Windows DPAPI 加密保存。数据清理选项在「隐私」页。
                   使用第三方引擎或转写服务前，请自行确认其条款与账号风险。
                 </div>
-
-                <div className="divider" />
-
-                <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
-                  <Button
-                    variant="ghost"
-                    icon={<Wand2 size={13} />}
-                    onClick={() => {
-                      setTab("engine");
-                    }}
-                  >
-                    引擎状态与自检
-                  </Button>
-                </div>
-
-                <div className="divider" />
-
-                <div className="form-row--inline" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {confirmWipe ? (
-                    <>
-                      <Button
-                        variant="danger"
-                        icon={<ShieldAlert size={13} />}
-                        onClick={async () => {
-                          try {
-                            await api.wipeArchive();
-                            toast("success", "语音索引已清空，媒体文件保留");
-                            setConfirmWipe(false);
-                            await useApp.getState().bootstrap();
-                          } catch (error) {
-                            toast("error", error instanceof Error ? error.message : String(error));
-                          }
-                        }}
-                      >
-                        确认清空
-                      </Button>
-                      <Button variant="ghost" onClick={() => setConfirmWipe(false)}>
-                        取消
-                      </Button>
-                    </>
-                  ) : (
-                    <Button variant="ghost" icon={<FileText size={13} />} onClick={() => setConfirmWipe(true)}>
-                      清空语音索引
-                    </Button>
-                  )}
-                  <span className="form-hint" style={{ marginLeft: "auto", marginTop: 0 }}>
-                    不删除媒体库中的音频文件
-                  </span>
-                </div>
               </>
             ) : null}
           </div>
@@ -763,9 +670,6 @@ export function SettingsPanel() {
             设置仅保存在本机
           </span>
           <span className="grow" />
-          <Button variant="ghost" onClick={close}>
-            取消
-          </Button>
           <Button variant="primary" onClick={() => void save()}>
             保存更改
           </Button>

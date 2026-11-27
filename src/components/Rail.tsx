@@ -1,4 +1,4 @@
-import { MessageSquare, BarChart3, ListChecks, Settings, Sun, Moon, Mic } from "lucide-react";
+import { MessageSquare, BarChart3, ListChecks, Settings, Mic } from "lucide-react";
 
 import { useApp, type View } from "@/lib/store";
 import { cn } from "@/components/ui/primitives";
@@ -14,19 +14,10 @@ export function Rail({ minimal = false }: { minimal?: boolean }) {
   const setView = useApp((state) => state.setView);
   const connection = useApp((state) => state.connection);
   const jobs = useApp((state) => state.jobs);
-  const theme = useApp((state) => state.theme);
-  const settings = useApp((state) => state.settings);
-  const saveSettings = useApp((state) => state.saveSettings);
   const setSettingsOpen = useApp((state) => state.setSettingsOpen);
 
   const pending = jobs.filter((job) => job.status === "pending" || job.status === "running").length;
   const failed = jobs.filter((job) => job.status === "failed").length;
-
-  const toggleTheme = async () => {
-    if (!settings) return;
-    const next = theme === "dark" ? "light" : "dark";
-    await saveSettings({ ...settings, ui: { ...settings.ui, theme: next } }, { silent: true });
-  };
 
   const statusClass =
     connection.status === "online"
@@ -67,15 +58,6 @@ export function Rail({ minimal = false }: { minimal?: boolean }) {
 
       <div className="rail__foot">
         <div className={cn("rail__status", statusClass)} title={connection.message || "尚未连接"} />
-        <button
-          type="button"
-          className="rail-btn"
-          title={theme === "dark" ? "切换到浅色" : "切换到深色"}
-          aria-label="切换主题"
-          onClick={toggleTheme}
-        >
-          {theme === "dark" ? <Sun size={17} strokeWidth={1.9} /> : <Moon size={17} strokeWidth={1.9} />}
-        </button>
         <button
           type="button"
           className="rail-btn"

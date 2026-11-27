@@ -15,13 +15,12 @@ import {
   Trash2,
   ListChecks,
   PanelRightOpen,
-  FileDown,
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
 import { formatClock, formatDuration, formatTime, groupByDay } from "@/lib/format";
 import { usePlayer } from "@/lib/player";
-import { rangeBounds, useApp, type RangeKey } from "@/lib/store";
+import { useApp, type RangeKey } from "@/lib/store";
 import type { Voice } from "@/lib/types";
 import { Avatar, Badge, Button, IconButton, cn } from "@/components/ui/primitives";
 import { Waveform } from "@/components/Waveform";
@@ -91,36 +90,6 @@ export function VoiceList() {
       toast("error", error instanceof Error ? error.message : String(error));
     } finally {
       setExporting(false);
-    }
-  };
-
-  const exportCsv = async () => {
-    if (!isTauri) {
-      toast("info", "浏览器预览模式不能保存 CSV");
-      return;
-    }
-    try {
-      const { save } = await import("@tauri-apps/plugin-dialog");
-      const picked = await save({
-        title: "导出当前筛选为 CSV",
-        defaultPath: `sylk-voices-${new Date().toISOString().slice(0, 10)}.csv`,
-        filters: [{ name: "CSV", extensions: ["csv"] }],
-      });
-      if (!picked) return;
-      const bounds = rangeBounds(range);
-      const report = await api.exportCsv(picked, {
-        conversationId: scope === "all" ? null : activeId,
-        keyword,
-        onlyStarred,
-        onlyTranscribed,
-        senderId: senderFilter,
-        from: bounds.from,
-        to: bounds.to,
-        limit: 500,
-      });
-      toast("success", `已导出 CSV → ${report.path}`);
-    } catch (error) {
-      toast("error", error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -283,16 +252,6 @@ export function VoiceList() {
 
         <button
           type="button"
-          className="icon-btn"
-          title="导出当前筛选为 CSV"
-          aria-label="导出当前筛选为 CSV"
-          onClick={() => void exportCsv()}
-        >
-          <FileDown size={15} />
-        </button>
-
-        <button
-          type="button"
           className={cn("icon-btn", selectMode && "is-on")}
           title={selectMode ? "退出多选" : "多选"}
           aria-label="多选"
@@ -377,19 +336,7 @@ export function VoiceList() {
           <EmptyArt />
           <div className="empty__title">{filtered ? "没有匹配结果" : "还没有语音"}</div>
           {!filtered ? (
-            <>
-              <div className="empty__text">{online ? "同步这个会话开始收集。" : "引擎未连接。"}</div>
-              <div className="empty__actions">
-                <Button
-                  variant="primary"
-                  icon={<History size={14} className={syncing ? "spin" : undefined} />}
-                  disabled={!online || syncing}
-                  onClick={() => void runSync()}
-                >
-                  {syncing ? "同步中" : "同步"}
-                </Button>
-              </div>
-            </>
+            <div className="empty__text">{online ? "同步这个会话开始收集。" : "引擎未连接。"}</div>
           ) : null}
         </div>
       ) : (

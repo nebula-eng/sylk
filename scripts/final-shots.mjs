@@ -189,24 +189,6 @@ await wait(400);
 console.log("设置 · 转写");
 await shot("07-settings-asr");
 
-/* 搜索 */
-await closeOverlay();
-await wait(300);
-await evaluate(`window.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true})); true`);
-await wait(400);
-await evaluate(`(() => {
-  const input = document.querySelector('.palette__field input');
-  if (!input) return false;
-  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-  setter.call(input, '日志');
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  return true;
-})()`);
-await wait(800);
-await lightenOverlay();
-console.log("搜索");
-await shot("08-search-light");
-
 /* 深色 */
 await closeOverlay();
 await wait(300);

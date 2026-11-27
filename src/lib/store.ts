@@ -68,7 +68,6 @@ interface AppState {
   prepareProgress: EngineProgress | null;
   theme: "light" | "dark";
   density: "comfortable" | "compact";
-  searchOpen: boolean;
   settingsOpen: boolean;
 
   bootstrap: () => Promise<void>;
@@ -109,7 +108,6 @@ interface AppState {
   setProgress: (event: ProgressEvent | null) => void;
   toast: (kind: Toast["kind"], text: string) => void;
   dismissToast: (id: number) => void;
-  setSearchOpen: (open: boolean) => void;
   setSettingsOpen: (open: boolean) => void;
   setDensity: (density: "comfortable" | "compact") => void;
 
@@ -170,7 +168,6 @@ export const useApp = create<AppState>((set, get) => ({
   prepareProgress: null,
   theme: "light",
   density: "comfortable",
-  searchOpen: false,
   settingsOpen: false,
 
   bootstrap: async () => {
@@ -535,7 +532,6 @@ export const useApp = create<AppState>((set, get) => ({
 
   dismissToast: (id) => set({ toasts: get().toasts.filter((toast) => toast.id !== id) }),
 
-  setSearchOpen: (open) => set({ searchOpen: open }),
   setSettingsOpen: (open) => set({ settingsOpen: open }),
   setDensity: (density) => set({ density }),
 

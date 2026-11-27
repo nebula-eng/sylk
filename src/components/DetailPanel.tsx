@@ -4,13 +4,10 @@ import {
   Play,
   Pause,
   Copy,
-  Star,
   Download,
   Trash2,
   RotateCw,
-  FolderDown,
   PanelRightClose,
-  Filter,
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
@@ -62,27 +59,10 @@ export function DetailPanel() {
 
 function ConversationOverview({ conversationId }: { conversationId: number }) {
   const conversations = useApp((state) => state.conversations);
-  const toast = useApp((state) => state.toast);
   const conversation = conversations.find((item) => item.id === conversationId);
 
   if (!conversation) return null;
   const name = conversation.remark || conversation.title;
-
-  const exportBundle = async () => {
-    try {
-      let target: string | undefined;
-      if (isTauri) {
-        const { open } = await import("@tauri-apps/plugin-dialog");
-        const picked = await open({ directory: true, title: "选择导出目录" });
-        if (!picked) return;
-        target = typeof picked === "string" ? picked : picked[0];
-      }
-      const report = await api.exportConversation(conversation.id, target);
-      toast("success", `已导出 ${report.files} 个文件 → ${report.path}`);
-    } catch (error) {
-      toast("error", error instanceof Error ? error.message : String(error));
-    }
-  };
 
   return (
     <div>
@@ -115,18 +95,6 @@ function ConversationOverview({ conversationId }: { conversationId: number }) {
         </span>
       </div>
 
-      <div style={{ marginTop: 18 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          icon={<FolderDown size={13.5} />}
-          disabled={conversation.voiceCount === 0}
-          onClick={() => void exportBundle()}
-        >
-          导出整个会话
-        </Button>
-      </div>
-
     </div>
   );
 }
@@ -136,7 +104,6 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
   const voice = voices.find((item) => item.id === voiceId);
   const updateVoice = useApp((state) => state.updateVoice);
   const deleteVoice = useApp((state) => state.deleteVoice);
-  const setFilter = useApp((state) => state.setFilter);
   const toast = useApp((state) => state.toast);
   const playingId = usePlayer((state) => state.voiceId);
   const playing = usePlayer((state) => state.playing);
@@ -258,22 +225,6 @@ function VoiceDetail({ voiceId }: { voiceId: number }) {
           <div style={{ fontSize: "var(--fs-base)", fontWeight: 600 }}>{voice.senderName || "未知发送者"}</div>
           <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-3)" }}>{formatDateTime(voice.sentAt)}</div>
         </div>
-        <IconButton
-          label="只看这个人的语音"
-          onClick={() =>
-            setFilter({ senderFilter: voice.senderId, senderFilterLabel: voice.senderName })
-          }
-        >
-          <Filter size={14} />
-        </IconButton>
-        <IconButton
-          label={voice.starred ? "取消星标" : "加星标"}
-          tone="gold"
-          active={voice.starred}
-          onClick={() => void updateVoice(voice.id, { starred: !voice.starred })}
-        >
-          <Star size={15} fill={voice.starred ? "currentColor" : "none"} />
-        </IconButton>
       </div>
 
       <div className="section">

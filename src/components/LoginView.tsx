@@ -1,29 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
-  ChevronDown,
   Loader2,
   QrCode,
   Power,
   RefreshCw,
   ScanLine,
-  ShieldAlert,
   Smartphone,
   TriangleAlert,
 } from "lucide-react";
 
 import { api, isTauri } from "@/lib/api";
-import { formatDuration } from "@/lib/format";
 import { useApp } from "@/lib/store";
 import type { EnginePhase } from "@/lib/types";
 import { Button, cn } from "@/components/ui/primitives";
-
-/** 引擎阶段 → 三步。hint 说的是「这一步要花多久 / 你要做什么」，不是概念解释。 */
-const STEPS = [
-  { key: "engine", title: "准备引擎", hint: "自动完成，通常十几秒" },
-  { key: "scan", title: "扫码登录", hint: "手机 QQ 扫一扫并确认" },
-  { key: "ready", title: "同步会话", hint: "登录后自动拉取群聊与好友" },
-];
 
 const HEADLINE: Record<string, string> = {
   unavailable: "接入引擎",
@@ -37,20 +27,6 @@ const HEADLINE: Record<string, string> = {
   idle: "准备中",
 };
 
-function stepState(phase: EnginePhase, index: number): "done" | "active" | "todo" | "error" {
-  if (phase === "error") {
-    return index === 0 ? "error" : "todo";
-  }
-  if (phase === "online") return "done";
-  if (phase === "unavailable" || phase === "preparing") {
-    return index === 0 ? (phase === "unavailable" ? "error" : "active") : "todo";
-  }
-  // starting / awaiting_scan / scanned / stopped / idle
-  if (index === 0) return "done";
-  if (index === 1) return "active";
-  return "todo";
-}
-
 export function LoginView() {
   const engine = useApp((state) => state.engine);
   const qr = useApp((state) => state.qr);
@@ -63,19 +39,11 @@ export function LoginView() {
   const settings = useApp((state) => state.settings);
   const saveSettings = useApp((state) => state.saveSettings);
 
-  const [showLogs, setShowLogs] = useState(false);
   const [busy, setBusy] = useState(false);
   const autoStarted = useRef(false);
-  const logRef = useRef<HTMLDivElement | null>(null);
 
   const phase: EnginePhase = engine?.phase ?? "idle";
   const external = settings?.engine.mode === "external";
-
-  useEffect(() => {
-    if (showLogs && logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
-    }
-  }, [showLogs, engine?.logs.length]);
 
   // 挂载时先取一次二维码，别等轮询发现版本变化。
   useEffect(() => {
@@ -219,38 +187,6 @@ export function LoginView() {
                 ? "连接外部 NapCat 后展示二维码。"
                 : "打开手机 QQ 扫一扫。"}
           </p>
-
-          <ol className="login__steps">
-            {STEPS.map((step, index) => {
-              const state = stepState(phase, index);
-              return (
-                <li key={step.key} className={cn("login__step", `is-${state}`)}>
-                  <span className="login__dot">
-                    {state === "done" ? (
-                      <Check size={11} />
-                    ) : state === "error" ? (
-                      <TriangleAlert size={11} />
-                    ) : state === "active" ? (
-                      <Loader2 size={11} className="spin" />
-                    ) : (
-                      index + 1
-                    )}
-                  </span>
-                  <span className="login__step-text">
-                    <strong>{step.title}</strong>
-                    <em>{step.hint}</em>
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-
-          <div className="login__foot">
-            <ShieldAlert size={12} />
-            <span>
-              引擎仅监听本机 127.0.0.1。语音、转写文本与数据库均保存在本机。
-            </span>
-          </div>
         </div>
 
         {/* 右：二维码 */}
@@ -391,48 +327,9 @@ export function LoginView() {
                   <RefreshCw size={11} />
                   刷新二维码
                 </button>
-                <span className="login__qr-hint">
-                  {phase === "awaiting_scan" ? "手机 QQ 扫一扫" : engine?.detail}
-                </span>
               </div>
             </>
           )}
-
-          {engine && (engine.logs.length > 0 || engine.uptime > 0) ? (
-            <div className="login__logs">
-              <button
-                type="button"
-                className="login__logs-toggle"
-                onClick={() => setShowLogs(!showLogs)}
-                aria-expanded={showLogs}
-              >
-                <ChevronDown size={12} className={cn("chev", showLogs && "is-open")} />
-                引擎日志
-                <span className="login__logs-meta">
-                  {engine.pid ? `PID ${engine.pid}` : "未运行"}
-                  {engine.uptime > 0 ? ` · ${formatDuration(engine.uptime * 1000)}` : ""}
-                  {engine.httpPort ? ` · 127.0.0.1:${engine.httpPort}` : ""}
-                </span>
-              </button>
-              {showLogs ? (
-                <div className="login__logs-body" ref={logRef}>
-                  {engine.logs.map((line, index) => (
-                    <div className="login__log-line" key={`${index}-${line.slice(0, 12)}`}>
-                      {line}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {!needsPrepare && phase !== "online" && phase !== "error" ? (
-            <div className="login__actions">
-              <button type="button" className="login__link" onClick={() => void pickDir()}>
-                更换引擎目录
-              </button>
-            </div>
-          ) : null}
         </div>
       </div>
     </div>
