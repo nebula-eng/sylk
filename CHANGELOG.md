@@ -2,6 +2,18 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
+## [0.4.2] - 2026-11-27
+
+### 新增
+
+- 本机转写开箱即用：Sylk 会自动识别 `%LOCALAPPDATA%\Sylk\tools` 里的 `whisper-cli.exe` 与 `ggml-*.bin`，设置里不用手填路径。
+- 新增 `npm run setup:asr`：一键下载 whisper.cpp Windows 运行时和 ggml 模型到上面的工具目录。
+- 首次探测模型时优先选择 base，也支持 small / medium。
+
+### 文档
+
+- 更新快速开始与 FAQ，补充本机转写的预下载和自动识别步骤。
+
 ## [0.4.1] - 2026-11-27
 
 ### 精简

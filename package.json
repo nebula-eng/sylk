@@ -4,13 +4,14 @@
   "engines": {
     "node": ">=20"
   },
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Sylk —— 把 QQ 语音消息存档、转写、归纳的本地优先桌面应用",
   "type": "module",
   "license": "MIT",
   "author": "Sylk contributors",
   "scripts": {
     "setup": "node scripts/setup.mjs",
+    "setup:asr": "powershell -ExecutionPolicy Bypass -File scripts/setup-asr.ps1",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",

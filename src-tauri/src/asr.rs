@@ -27,24 +27,22 @@ pub fn probe(settings: &AsrSettings) -> AsrProbe {
 
     match locate_whisper(settings) {
         Some(exe) => {
-            if settings.model_path.trim().is_empty() {
-                AsrProbe {
-                    engine: "whisper-cli".into(),
-                    available: false,
-                    detail: format!("已找到 {}，但还没有选择模型文件", exe.display()),
-                }
-            } else if !Path::new(&settings.model_path).is_file() {
-                AsrProbe {
-                    engine: "whisper-cli".into(),
-                    available: false,
-                    detail: format!("模型文件不存在：{}", settings.model_path),
-                }
-            } else {
-                AsrProbe {
+            let model = locate_model(settings, Some(exe.as_path()));
+            match model {
+                Some(model) => AsrProbe {
                     engine: "whisper-cli".into(),
                     available: true,
-                    detail: format!("{} · {}", exe.display(), file_name(&settings.model_path)),
-                }
+                    detail: format!(
+                        "{} · {}",
+                        exe.display(),
+                        file_name(&model.to_string_lossy())
+                    ),
+                },
+                None => AsrProbe {
+                    engine: "whisper-cli".into(),
+                    available: false,
+                    detail: format!("已找到 {}，但没有找到 ggml-*.bin 模型", exe.display()),
+                },
             }
         }
         None => AsrProbe {
@@ -91,6 +89,66 @@ pub fn locate_whisper(settings: &AsrSettings) -> Option<PathBuf> {
     }
 
     candidates.into_iter().find(|path| path.is_file())
+}
+
+/// 找模型：优先使用设置里的路径；留空时在看得到 whisper-cli 的目录、
+/// 应用目录以及 `%LOCALAPPDATA%\Sylk\tools` 里找 `ggml-*.bin`。
+pub fn locate_model(settings: &AsrSettings, whisper: Option<&Path>) -> Option<PathBuf> {
+    let configured = settings.model_path.trim();
+    if !configured.is_empty() {
+        let path = PathBuf::from(configured);
+        return path.is_file().then_some(path);
+    }
+
+    let mut dirs: Vec<PathBuf> = Vec::new();
+    if let Some(whisper) = whisper {
+        if let Some(parent) = whisper.parent() {
+            dirs.push(parent.to_path_buf());
+        }
+    }
+    if let Ok(local) = std::env::var("LOCALAPPDATA") {
+        dirs.push(PathBuf::from(local).join("Sylk/tools"));
+    }
+    if let Ok(current) = std::env::current_exe() {
+        if let Some(parent) = current.parent() {
+            dirs.push(parent.to_path_buf());
+            dirs.push(parent.join("tools"));
+        }
+    }
+
+    let preferred = [
+        "ggml-base.bin",
+        "ggml-small.bin",
+        "ggml-medium.bin",
+        "ggml-tiny.bin",
+    ];
+    for dir in &dirs {
+        for name in preferred {
+            let path = dir.join(name);
+            if path.is_file() {
+                return Some(path);
+            }
+        }
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            continue;
+        };
+        let mut models: Vec<PathBuf> = entries
+            .flatten()
+            .map(|entry| entry.path())
+            .filter(|path| {
+                path.is_file()
+                    && path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .is_some_and(|name| name.starts_with("ggml-") && name.ends_with(".bin"))
+            })
+            .collect();
+        models.sort();
+        if let Some(path) = models.into_iter().next() {
+            return Some(path);
+        }
+    }
+    None
 }
 
 /// 把任意可读音频整理成 whisper 需要的 16 kHz 单声道 WAV。
@@ -162,15 +220,9 @@ async fn transcribe_local(
 ) -> AppResult<String> {
     let exe = locate_whisper(settings)
         .ok_or_else(|| AppError::msg("未找到 whisper-cli，请在设置中指定路径"))?;
-    if settings.model_path.trim().is_empty() {
-        return Err(AppError::msg("尚未选择 whisper 模型文件"));
-    }
-    if !Path::new(&settings.model_path).is_file() {
-        return Err(AppError::msg(format!(
-            "模型文件不存在：{}",
-            settings.model_path
-        )));
-    }
+    let model = locate_model(settings, Some(exe.as_path())).ok_or_else(|| {
+        AppError::msg("未找到 whisper 模型，请把 ggml-*.bin 放到 whisper-cli 同一目录")
+    })?;
 
     let work_dir = library_dir.join(".work").join("asr");
     let source = audio_path.to_path_buf();
@@ -183,7 +235,7 @@ async fn transcribe_local(
     let prefix = work_dir.join(format!("asr-{}", uuid::Uuid::new_v4()));
     let mut cmd = Command::new(&exe);
     cmd.arg("-m")
-        .arg(&settings.model_path)
+        .arg(&model)
         .arg("-f")
         .arg(&input)
         .arg("-l")
@@ -309,5 +361,25 @@ mod tests {
     fn cleans_placeholders() {
         assert_eq!(clean_transcript("[BLANK_AUDIO]\n"), "");
         assert_eq!(clean_transcript("你好\n世界\n"), "你好 世界");
+    }
+
+    #[test]
+    fn finds_model_next_to_whisper() {
+        let dir = std::env::temp_dir().join(format!("sylk-asr-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let exe = dir.join("whisper-cli.exe");
+        let model = dir.join("ggml-test.bin");
+        std::fs::write(&exe, b"stub").unwrap();
+        std::fs::write(&model, b"stub").unwrap();
+
+        let settings = AsrSettings {
+            whisper_path: exe.to_string_lossy().to_string(),
+            ..AsrSettings::default()
+        };
+        let found = locate_model(&settings, Some(exe.as_path()));
+        assert_eq!(found.as_deref(), Some(model.as_path()));
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

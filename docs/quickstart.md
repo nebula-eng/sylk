@@ -76,10 +76,22 @@ Sylk 通过 OneBot 11 读取 QQ 消息，需要一个引擎把 QQ 的数据暴�
 登录成功后会自动同步会话列表；设置 → 引擎里的「登录后自动同步语音」默认开启，
 会再拉取每个会话最近一页语音（只拉语音，不是全部聊天记录）。
 
-- 某个会话没有语音：进入会话，点右上角「同步历史」；
+- 某个会话没有语音：进入会话，点右上角「同步」；
 - 想看同步结果：任务页有下载与转写进度、失败原因；
 - 媒体库默认在「文档 / Sylk Library」，`audio/` 是 WAV，`raw/` 是可选的 SILK 原件；
 - 点语音行左侧的播放按钮试听；详情面板可以加星标、标签、备注和转写。
+
+## 可选：本机转写
+
+如果要用本机 whisper.cpp：把 `whisper-cli.exe` 和 `ggml-*.bin` 放到
+`%LOCALAPPDATA%\Sylk\tools`，然后在 设置 → 转写 里启用即可；Sylk 会自动找到这套文件。
+源码环境可以运行：
+
+```powershell
+npm run setup:asr
+```
+
+默认下载 `base` 模型；中文要求更高时用 `powershell -File scripts/setup-asr.ps1 -Model small`。
 
 ## 6. 常见错误与下一步
 
